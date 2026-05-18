@@ -5,7 +5,10 @@ const sequelize = require('./database/sequelize');
 
 const app = express();
 
+const routes = require('./routes');
+
 app.use(express.json());
+app.use('/api', routes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -20,12 +23,13 @@ async function startServer() {
         console.log('Database connected');
 
         app.listen(PORT, () => {
-            console.log(`Server started on poost ${PORT}`);
+            console.log(`Server started on port ${PORT}`);
         });
     }
     catch (error) {
         console.error('Database connaction error:', error);
     }
 }
+
 
 startServer();
