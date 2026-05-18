@@ -1,4 +1,5 @@
 const authService = require('./auth.service');
+const { AppUser } = require('../../database/models');
 
 class AuthController {
     async register(req, res) {
@@ -59,6 +60,31 @@ class AuthController {
                 message: error.message,
             })
         };
+    }
+
+    async me(req, res) {
+        try {
+            const user = await AppUser.findByPk(
+                req.user.user_id,
+                {
+                    attributes: {
+                        exclude: ['password_hash'],
+                    },
+                }
+            );
+
+            if (!user) {
+                return res.status(404).json({
+                    message: 'User not found',
+                });
+            }
+
+            return res.json(user);
+        } catch (error) {
+            return res.status(500).json ({
+                message: error.message,
+            });
+        }
     }
 }
 

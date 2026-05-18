@@ -1,6 +1,7 @@
 const Router = require('express');
 
 const authController = require('./auth.controller');
+const authMiddleware = require('../../middlewares/auth.middleware');
 
 const router = new Router();
 
@@ -22,6 +23,12 @@ router.post(
 router.post(
     '/logout',
     authController.logout
+);
+
+router.get(
+    '/me',
+    authMiddleware,
+    authController.me
 );
 
 module.exports = router;
