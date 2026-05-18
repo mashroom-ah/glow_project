@@ -30,6 +30,36 @@ class AuthController {
             });
         }
     }
+
+    async refresh(req, res) {
+        try {
+            const { refresh_token } = req.body;
+
+            const result = await authService.refresh(
+                refresh_token
+            );
+
+            return res.json(result);
+        } catch (error) {
+            return res.status(401).json({
+                message: error.message,
+            });
+        }
+    }
+
+    async logout(req, res) {
+        try {
+            const { refresh_token } = req.body;
+
+            const result = await authService.logout(refresh_token);
+
+            return res.json(result);
+        } catch (error) {
+            return res.status(400).json({
+                message: error.message,
+            })
+        };
+    }
 }
 
 module.exports = new AuthController();

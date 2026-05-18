@@ -53,7 +53,7 @@ class AuthService {
 
         return this.generateAuthResponse(user);
     }
-    
+
     async generateAuthResponse(user) {
         const accessToken = jwt.sign(
             {
@@ -85,13 +85,79 @@ class AuthService {
 
         return {
             user: {
-                user_id : user.user_id,
+                user_id: user.user_id,
                 email: user.email,
                 name: user.name,
             },
 
             access_token: accessToken,
             refresh_token: refreshToken,
+        };
+    }
+
+    async refresh(refreshToken) {
+        if (!refreshToken) {
+            throw new Error('Refresh token required');
+        }
+
+        const existingToken = await RefreshToken.findOne({
+            where: {
+                token: refreshToken,
+                revoked: false,
+            },
+        });
+
+        if (!existingToken) {
+            throw new Error('Invalid refresh token');
+        }
+
+        const decoded = jwt.verify(
+            refreshToken,
+            process.env.JWT_REFRESH_SECRET
+        );
+
+        const user = await AppUser.findByPk(decoded.user_id);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const newAccessToken = jwt.sign(
+            {
+                user_id: user.user_id,
+            },
+            process.env.JWT_ACCESS_SECRET,
+            {
+                expiresIn: '15m',
+            }
+        );
+
+        return {
+            access_token: newAccessToken,
+        };
+    }
+
+    async logout(refreshToken) {
+        if (!refreshToken) {
+            throw new Error('Refresh token required');
+        }
+
+        const token = await RefreshToken.findOne({
+            where:{
+                token: refreshToken,
+            }
+        });
+
+        if (!token) {
+            throw new Error ('Token not found');
+        }
+
+        token.revoked = true;
+
+        await token.save();
+
+        return {
+            message: 'Logged out successfully',
         };
     }
 }
