@@ -11,4 +11,10 @@ router.get(
     userController.getMe
 );
 
+router.put(
+    '/profile',
+    authMiddleware,
+    userController.updateProfile
+);
+
 module.exports = router;
