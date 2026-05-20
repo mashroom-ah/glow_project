@@ -39,7 +39,7 @@ module.exports = {
 
       shelf_life_open: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
 
       opened_at: {

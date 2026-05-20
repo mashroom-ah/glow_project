@@ -4,14 +4,22 @@ const {
     calculateItemStatus,
 } = require('../../utils/itemStatus');
 
+const {
+    calculateExpirationDate,
+} = require('../../utils/expirationDate');
+
 class ItemService {
     async create(userId, data) {
-        const status = calculateItemStatus(
-            data.expiration_date
-        );
+        const expirationDate =
+            calculateExpirationDate(data);
+
+        const status =
+            calculateItemStatus(expirationDate);
 
         const item = await Item.create({
             ...data,
+
+            expiration_date: expirationDate,
 
             user_id: userId,
 
@@ -57,11 +65,16 @@ class ItemService {
             itemId
         );
 
-        if (data.expiration_date) {
-            data.status = calculateItemStatus(
-                data.expiration_date
+        const expirationDate =
+            calculateExpirationDate(
+                data,
+                item
             );
-        }
+
+        data.expiration_date = expirationDate;
+
+        data.status =
+            calculateItemStatus(expirationDate);
 
         await item.update(data);
 

@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
 
       shelf_life_open: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
 
       opened_at: {
