@@ -10,7 +10,7 @@ module.exports = {
         allowNull: false,
       },
 
-      name: {
+      product_name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -38,18 +38,36 @@ module.exports = {
 
         onDelete: 'SET NULL',
       },
-    },
+
+      created_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.fn('NOW'),
+      },
+
+      updated_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.fn('NOW'),
+      },
+    });
+
+    await queryInterface.addIndex(
+      'product',
+      ['product_name', 'group_id', 'component_id'],
       {
-        indexes: [
-          {
-            unique: true,
-            fields: ['name','group_id', 'component_id'],
-          },
-        ],
-      });
+        unique: true,
+        name: 'product_unique_name_group_component',
+      }
+    );
   },
 
   async down(queryInterface) {
+    await queryInterface.removeIndex(
+      'product',
+      'product_unique_name_group_component'
+    );
+
     await queryInterface.dropTable('product');
   },
 };
