@@ -5,7 +5,7 @@ const {
 } = require('../../database/models');
 
 class ProductService {
-  async getAll(filters = {}) {
+  async getAll(filters) {
     const where = {};
 
     if (filters.group_id) {
@@ -13,7 +13,8 @@ class ProductService {
     }
 
     if (filters.component_id) {
-      where.component_id = filters.component_id;
+      where.component_id =
+        filters.component_id;
     }
 
     return Product.findAll({
@@ -37,9 +38,7 @@ class ProductService {
         },
       ],
 
-      order: [
-        ['product_name', 'ASC'],
-      ],
+      order: [['product_name', 'ASC']],
     });
   }
 
@@ -50,10 +49,18 @@ class ProductService {
         include: [
           {
             model: ProductGroup,
+            attributes: [
+              'group_id',
+              'group_name',
+            ],
           },
 
           {
             model: ActiveComponent,
+            attributes: [
+              'component_id',
+              'component_name',
+            ],
           },
         ],
       }

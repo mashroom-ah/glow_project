@@ -1,4 +1,5 @@
-const productService = require('./product.service');
+const productService =
+  require('./product.service');
 
 class ProductController {
   async getAll(req, res) {
@@ -10,7 +11,7 @@ class ProductController {
 
       return res.json(result);
     } catch (error) {
-      return res.status(400).json({
+      return res.status(500).json({
         message: error.message,
       });
     }
@@ -32,4 +33,5 @@ class ProductController {
   }
 }
 
-module.exports = new ProductController();
+module.exports =
+  new ProductController();
