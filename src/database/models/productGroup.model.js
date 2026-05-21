@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const ProductGroup = sequelize.define(
     'ProductGroup',
     {
-      product_group_id: {
+      group_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
 
     {
       tableName: 'product_group',
-
       timestamps: false,
     }
   );

@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
 
     {
       tableName: 'active_component',
-
       timestamps: false,
     }
   );

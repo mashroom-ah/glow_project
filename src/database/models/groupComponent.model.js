@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
 
     {
       tableName: 'group_component',
-
       timestamps: false,
     }
   );

@@ -28,6 +28,17 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'product',
 
       timestamps: false,
+
+      indexes: [
+        {
+          unique: true,
+          fields: [
+            'product_name',
+            'group_id',
+            'component_id',
+          ],
+        },
+      ],
     }
   );
 
