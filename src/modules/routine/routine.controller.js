@@ -81,6 +81,21 @@ class RoutineController {
             });
         }
     }
+
+    async validate(req, res) {
+        try {
+            const result =
+                await routineService.validate(
+                    req.body
+                );
+            
+            return res.json(result);
+        } catch (error) {
+            return res.status(400).json({
+                message: error.message,
+            });
+        }
+    }
 }
 
 module.exports =

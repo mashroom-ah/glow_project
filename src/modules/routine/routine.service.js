@@ -7,6 +7,10 @@ const {
   GroupComponent,
 } = require('../../database/models');
 
+const {
+  validateRoutine,
+} = require('./routineValidation');
+
 class RoutineService {
   async create(userId, data) {
     const routine = await Routine.create({
@@ -205,6 +209,51 @@ class RoutineService {
       message:
         'Routine deleted successfully',
     };
+  }
+
+  async validate(data) {
+    const productIds = data.steps.map(
+      (step) => step.product_id
+    );
+
+    const products =
+      await Product.findAll({
+        where: {
+          product_id: productIds,
+        },
+
+        include: [
+          {
+            model: ProductGroup,
+
+            attributes: ['group_name'],
+          },
+
+          {
+            model: ActiveComponent,
+
+            attributes: ['component_name'],
+          },
+        ],
+      });
+
+    const normalizedProducts =
+      products.map((product) => ({
+        product_name:
+          product.product_name,
+
+        group_name:
+          product.ProductGroup
+            .group_name,
+
+        component_name:
+          product.ActiveComponent
+            ?.component_name || null,
+      }));
+
+    return validateRoutine(
+      normalizedProducts
+    );
   }
 }
 

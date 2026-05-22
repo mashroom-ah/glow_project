@@ -35,4 +35,9 @@ router.delete(
   routineController.delete
 );
 
+router.post(
+  '/validate',
+  routineController.validate
+);
+
 module.exports = router;
