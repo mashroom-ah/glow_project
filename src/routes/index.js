@@ -7,7 +7,6 @@ const productRoutes = require('../modules/product/product.routes');
 const componentRoutes = require('../modules/component/component.routes');
 const productGroupRoutes = require('../modules/product-group/productGroup.routes');
 const routineRoutes = require('../modules/routine/routine.routes');
-const routineStepRoutes = require('../modules/routine-step/routineStep.routes');
 
 const router = new Router();
 
