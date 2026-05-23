@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 const config =
   require('../../config/config')[
-    process.env.NODE_ENV || 'development'
+  process.env.NODE_ENV || 'development'
   ];
 
 const sequelize = new Sequelize(
@@ -63,6 +63,42 @@ db.Routine = require('./routine.model')(
 );
 
 db.RoutineStep = require('./routineStep.model')(
+  sequelize,
+  DataTypes
+);
+
+db.RoutineLog = require('./routineLog.model')(
+  sequelize,
+  DataTypes
+);
+
+db.RoutineStepLog = require('./routineStepLog.model')(
+  sequelize,
+  DataTypes
+);
+
+db.ReactionGroup = require('./reactionGroup.model')(
+  sequelize,
+  DataTypes
+);
+
+db.Reaction = require('./reaction.model')(
+  sequelize,
+  DataTypes
+);
+
+db.SkinReaction = require('./skinReaction.model')(
+  sequelize,
+  DataTypes
+);
+
+db.ReactionGroupScore =
+  require('./reactionGroupScore.model')(
+    sequelize,
+    DataTypes
+  );
+
+db.OverallScore = require('./overallScore.model')(
   sequelize,
   DataTypes
 );
@@ -148,6 +184,98 @@ db.Product.hasMany(db.RoutineStep, {
 
 db.RoutineStep.belongsTo(db.Product, {
   foreignKey: 'product_id',
+});
+
+//RoutineLog
+
+db.Routine.hasMany(db.RoutineLog, {
+  foreignKey: 'routine_id',
+});
+
+db.RoutineLog.belongsTo(db.Routine, {
+  foreignKey: 'routine_id',
+});
+
+db.AppUser.hasMany(db.RoutineLog, {
+  foreignKey: 'user_id',
+});
+
+db.RoutineLog.belongsTo(db.AppUser, {
+  foreignKey: 'user_id',
+});
+
+//RoutineStepLog
+
+db.RoutineLog.hasMany(db.RoutineStepLog, {
+  foreignKey: 'routine_log_id',
+});
+
+db.RoutineStepLog.belongsTo(db.RoutineLog, {
+  foreignKey: 'routine_log_id',
+});
+
+db.RoutineStep.hasMany(db.RoutineStepLog, {
+  foreignKey: 'routine_step_id',
+});
+
+db.RoutineStepLog.belongsTo(db.RoutineStep, {
+  foreignKey: 'routine_step_id',
+});
+
+//Reaction
+
+db.ReactionGroup.hasMany(db.Reaction, {
+  foreignKey: 'reaction_group_id',
+});
+
+db.Reaction.belongsTo(db.ReactionGroup, {
+  foreignKey: 'reaction_group_id',
+});
+
+//SkinReaction
+
+db.RoutineLog.hasMany(db.SkinReaction, {
+  foreignKey: 'routine_log_id',
+});
+
+db.SkinReaction.belongsTo(db.RoutineLog, {
+  foreignKey: 'routine_log_id',
+});
+
+db.Reaction.hasMany(db.SkinReaction, {
+  foreignKey: 'reaction_id',
+});
+
+db.SkinReaction.belongsTo(db.Reaction, {
+  foreignKey: 'reaction_id',
+});
+
+//ReactionGroupScore
+
+db.RoutineLog.hasMany(db.SkinReaction, {
+  foreignKey: 'routine_log_id',
+});
+
+db.SkinReaction.belongsTo(db.RoutineLog, {
+  foreignKey: 'routine_log_id',
+});
+
+db.Reaction.hasMany(db.SkinReaction, {
+  foreignKey: 'reaction_id',
+});
+
+db.SkinReaction.belongsTo(db.Reaction, {
+  foreignKey: 'reaction_id',
+});
+
+//OverallScore
+
+db.RoutineLog.hasOne(db.OverallScore, {
+  foreignKey: 'routine_log_id',
+});
+
+db.OverallScore.belongsTo(db.RoutineLog, {
+  foreignKey: 'routine_log_id',
 });
 
 // associations from models
