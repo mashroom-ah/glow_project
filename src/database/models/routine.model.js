@@ -22,12 +22,21 @@ module.exports = (sequelize, DataTypes) => {
 
         allowNull: false,
       },
+
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
     },
 
     {
       tableName: 'routine',
 
-      timestamps: false,
+      timestamps: true,
+
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
     }
   );
 

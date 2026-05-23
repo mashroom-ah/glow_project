@@ -67,6 +67,7 @@ class RoutineService {
     const routines = await Routine.findAll({
       where: {
         user_id: userId,
+        is_active: true,
       },
 
       include: [
@@ -114,6 +115,7 @@ class RoutineService {
       where: {
         routine_id: routineId,
         user_id: userId,
+        is_active: true,
       },
 
       include: [
@@ -150,6 +152,7 @@ class RoutineService {
       where: {
         routine_id: routineId,
         user_id: userId,
+        is_active: true,
       },
     });
 
@@ -161,16 +164,22 @@ class RoutineService {
       routine_type: data.routine_type,
     });
 
-    // удалить старые шаги
     await RoutineStep.destroy({
       where: {
         routine_id: routine.routine_id,
       },
     });
 
-    // создать новые
     if (data.steps?.length) {
       for (const step of data.steps) {
+        const product = await Product.findByPk(
+          step.product_id
+        );
+
+        if (!product) {
+          throw new Error('Product not found');
+        }
+
         await RoutineStep.create({
           routine_id: routine.routine_id,
           product_id: step.product_id,
@@ -196,6 +205,7 @@ class RoutineService {
       where: {
         routine_id: routineId,
         user_id: userId,
+        is_active: true,
       },
     });
 
@@ -203,11 +213,13 @@ class RoutineService {
       throw new Error('Routine not found');
     }
 
-    await routine.destroy();
+    await routine.update({
+      is_active: false,
+    });
 
     return {
       message:
-        'Routine deleted successfully',
+        'Routine archived successfully',
     };
   }
 
