@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: true,
       },
+
+      archived_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
 
     {

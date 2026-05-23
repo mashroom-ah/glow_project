@@ -148,7 +148,7 @@ class RoutineService {
   }
 
   async update(userId, routineId, data) {
-    const routine = await Routine.findOne({
+    const oldRoutine = await Routine.findOne({
       where: {
         routine_id: routineId,
         user_id: userId,
@@ -156,20 +156,23 @@ class RoutineService {
       },
     });
 
-    if (!routine) {
+    if (!oldRoutine) {
       throw new Error('Routine not found');
     }
 
-    await routine.update({
+    // архивируем старую рутину
+    await oldRoutine.update({
+      is_active: false,
+      archived_at: new Date(),
+    });
+
+    // создаём новую
+    const newRoutine = await Routine.create({
+      user_id: userId,
       routine_type: data.routine_type,
     });
 
-    await RoutineStep.destroy({
-      where: {
-        routine_id: routine.routine_id,
-      },
-    });
-
+    // создаём новые шаги
     if (data.steps?.length) {
       for (const step of data.steps) {
         const product = await Product.findByPk(
@@ -181,7 +184,7 @@ class RoutineService {
         }
 
         await RoutineStep.create({
-          routine_id: routine.routine_id,
+          routine_id: newRoutine.routine_id,
           product_id: step.product_id,
           step_order: step.step_order,
 
@@ -196,7 +199,7 @@ class RoutineService {
 
     return this.getById(
       userId,
-      routine.routine_id
+      newRoutine.routine_id
     );
   }
 
@@ -215,6 +218,7 @@ class RoutineService {
 
     await routine.update({
       is_active: false,
+      archived_at: new Date(),
     });
 
     return {
