@@ -5,11 +5,14 @@ const {
   ProductGroup,
   ActiveComponent,
   GroupComponent,
+  RoutineLog,
 } = require('../../database/models');
 
 const {
   validateRoutine,
 } = require('./routineValidation');
+
+const { Op } = require('sequelize');
 
 class RoutineService {
   async create(userId, data) {
@@ -147,6 +150,169 @@ class RoutineService {
     return routine;
   }
 
+  async getByDate(userId, date) {
+    const routines = await Routine.findAll({
+      where: {
+        user_id: userId,
+        is_active: true,
+      },
+
+      include: [
+        {
+          model: RoutineStep,
+
+          include: [
+            {
+              model: Product,
+
+              include: [
+                ProductGroup,
+                ActiveComponent,
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const targetDate = new Date(date);
+
+    targetDate.setHours(0, 0, 0, 0);
+
+    const dayOfWeek =
+      targetDate.getDay();
+
+    const startOfDay = new Date(
+      targetDate
+    );
+
+    const endOfDay = new Date(
+      targetDate
+    );
+
+    endOfDay.setHours(
+      23,
+      59,
+      59,
+      999
+    );
+
+    const result = [];
+
+    for (const routine of routines) {
+      const plainRoutine =
+        routine.toJSON();
+
+      plainRoutine.RoutineSteps =
+        plainRoutine.RoutineSteps.filter(
+          (step) => {
+            // DAILY
+
+            if (
+              step.frequency_type ===
+              'daily'
+            ) {
+              return true;
+            }
+
+            // WEEKLY
+
+            if (
+              step.frequency_type ===
+              'weekly'
+            ) {
+              return (
+                dayOfWeek ===
+                step.frequency_value
+              );
+            }
+
+            // EVERY N DAYS
+
+            if (
+              step.frequency_type ===
+              'every_n_days'
+            ) {
+              if (
+                step.frequency_value <= 0
+              ) {
+                return false;
+              }
+
+              const createdAt =
+                new Date(
+                  step.created_at
+                );
+
+              createdAt.setHours(
+                0,
+                0,
+                0,
+                0
+              );
+
+              const diffMs =
+                targetDate - createdAt;
+
+              const diffDays =
+                Math.floor(
+                  diffMs /
+                    (1000 *
+                      60 *
+                      60 *
+                      24)
+                );
+
+              return (
+                diffDays >= 0 &&
+                diffDays %
+                  step.frequency_value ===
+                  0
+              );
+            }
+
+            return false;
+          }
+        );
+
+      plainRoutine.RoutineSteps.sort(
+        (a, b) =>
+          a.step_order - b.step_order
+      );
+
+      const existingLog =
+        await RoutineLog.findOne({
+          where: {
+            routine_id:
+              plainRoutine.routine_id,
+
+            completed_at: {
+              [Op.between]: [
+                startOfDay,
+                endOfDay,
+              ],
+            },
+          },
+        });
+
+      plainRoutine.completed =
+        !!existingLog;
+
+      plainRoutine.routine_log_id =
+        existingLog?.routine_log_id ||
+        null;
+
+      if (
+        plainRoutine.RoutineSteps
+          .length > 0
+      ) {
+        result.push(plainRoutine);
+      }
+    }
+
+    return result;
+  }
+
   async update(userId, routineId, data) {
     const oldRoutine = await Routine.findOne({
       where: {
@@ -160,19 +326,16 @@ class RoutineService {
       throw new Error('Routine not found');
     }
 
-    // архивируем старую рутину
     await oldRoutine.update({
       is_active: false,
       archived_at: new Date(),
     });
 
-    // создаём новую
     const newRoutine = await Routine.create({
       user_id: userId,
       routine_type: data.routine_type,
     });
 
-    // создаём новые шаги
     if (data.steps?.length) {
       for (const step of data.steps) {
         const product = await Product.findByPk(

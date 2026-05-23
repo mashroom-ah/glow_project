@@ -21,6 +21,16 @@ router.get(
 );
 
 router.get(
+  '/today',
+  routineController.getToday
+);
+
+router.get(
+  '/date/:date',
+  routineController.getByDate
+);
+
+router.get(
   '/:id',
   routineController.getById
 );

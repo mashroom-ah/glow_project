@@ -49,6 +49,38 @@ class RoutineController {
         }
     }
 
+    async getToday(req, res, next) {
+        try {
+            const today = new Date()
+                .toISOString()
+                .split('T')[0];
+
+            const routines =
+                await routineService.getByDate(
+                    req.user.user_id,
+                    today
+                );
+
+            res.json(routines);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getByDate(req, res, next) {
+        try {
+            const routines =
+                await routineService.getByDate(
+                    req.user.user_id,
+                    req.params.date
+                );
+
+            res.json(routines);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async update(req, res) {
         try {
             const result =
@@ -88,7 +120,7 @@ class RoutineController {
                 await routineService.validate(
                     req.body
                 );
-            
+
             return res.json(result);
         } catch (error) {
             return res.status(400).json({
