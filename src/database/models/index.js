@@ -103,6 +103,16 @@ db.OverallScore = require('./overallScore.model')(
   DataTypes
 );
 
+db.DailyEnvironment = require('./dailyEnvironment.model')(
+  sequelize,
+  DataTypes
+);
+
+db.WaterLog = require('./waterLog.model')(
+  sequelize,
+  DataTypes
+);
+
 //relstions
 
 // User
@@ -288,6 +298,31 @@ db.RoutineLog.hasOne(db.OverallScore, {
 
 db.OverallScore.belongsTo(db.RoutineLog, {
   foreignKey: 'routine_log_id',
+});
+
+// water logs and daily environment
+db.DailyEnvironment.belongsTo(db.AppUser, {
+  foreignKey: 'user_id',
+});
+
+db.AppUser.hasMany(db.DailyEnvironment, {
+  foreignKey: 'user_id',
+});
+
+db.WaterLog.belongsTo(db.AppUser, {
+  foreignKey: 'user_id',
+});
+
+db.AppUser.hasMany(db.WaterLog, {
+  foreignKey: 'user_id',
+});
+
+db.WaterLog.belongsTo(db.DailyEnvironment, {
+  foreignKey: 'daily_environment_id',
+});
+
+db.DailyEnvironment.hasOne(db.WaterLog, {
+  foreignKey: 'daily_environment_id',
 });
 
 // associations from models

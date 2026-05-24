@@ -9,7 +9,7 @@ const productGroupRoutes = require('../modules/product-group/productGroup.routes
 const routineRoutes = require('../modules/routine/routine.routes');
 const routineLogRoutes = require('../modules/routine-log/routineLog.routes');
 const analyticsRoutes = require('../modules/analytics/analytics.routes');
-const skinReactionRoutes = require('./modules/skin-reaction/skinReaction.routes');
+const skinReactionRoutes = require('../modules/skin-reactions/skinReaction.routes');
 
 const router = new Router();
 

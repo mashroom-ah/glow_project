@@ -53,7 +53,9 @@ module.exports = (sequelize, DataTypes) => {
             },
 
             water_avg: {
-                type: DataTypes.FLOAT,
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 2000,
             },
         },
         {
