@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./cron/water.cron');
 
 const express = require('express');
 
