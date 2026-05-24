@@ -216,6 +216,166 @@ class RoutineLogService {
 
         return logs;
     }
+
+    async update(userId, routineLogId, data) {
+        const { steps, reactions, overall_score } = data;
+
+        const transaction = await sequelize.transaction();
+
+        try {
+            // 1. Найти существующий лог и проверить права
+            const routineLog = await RoutineLog.findOne({
+                where: {
+                    routine_log_id: routineLogId,
+                    user_id: userId,
+                },
+                include: [{ model: Routine, include: [{ model: RoutineStep }] }],
+                transaction,
+            });
+
+            if (!routineLog) {
+                throw new Error('Routine log not found');
+            }
+
+            const routine = routineLog.Routine;
+            if (!routine) {
+                throw new Error('Routine not found');
+            }
+
+            // 2. Определить обязательные шаги на дату лога
+            const completedAt = routineLog.completed_at;
+            const targetDate = new Date(completedAt);
+            targetDate.setHours(0, 0, 0, 0);
+            const dayOfWeek = targetDate.getDay();
+
+            const requiredSteps = routine.RoutineSteps.filter((step) => {
+                if (step.frequency_type === 'daily') return true;
+                if (step.frequency_type === 'weekly') return step.frequency_value === dayOfWeek;
+                if (step.frequency_type === 'every_n_days') {
+                    if (step.frequency_value <= 0) return false;
+                    const createdAt = new Date(step.created_at);
+                    createdAt.setHours(0, 0, 0, 0);
+                    const diffDays = Math.floor((targetDate - createdAt) / (1000 * 60 * 60 * 24));
+                    return diffDays >= 0 && diffDays % step.frequency_value === 0;
+                }
+                return false;
+            });
+
+            const requiredStepIds = new Set(requiredSteps.map((s) => s.routine_step_id));
+
+            // 3. Обновить шаги (RoutineStepLog)
+            if (steps && steps.length) {
+                const stepsMap = new Map();
+                for (const step of steps) {
+                    if (!requiredStepIds.has(step.routine_step_id)) {
+                        throw new Error(
+                            `Step ${step.routine_step_id} is not required for this date or does not belong to the routine`
+                        );
+                    }
+                    if (stepsMap.has(step.routine_step_id)) {
+                        throw new Error(`Duplicate step ${step.routine_step_id}`);
+                    }
+                    stepsMap.set(step.routine_step_id, step.completed);
+                }
+
+                // Обновляем каждый существующий RoutineStepLog (они уже есть, т.к. создавались при создании)
+                const existingStepLogs = await RoutineStepLog.findAll({
+                    where: { routine_log_id: routineLogId },
+                    transaction,
+                });
+
+                for (const stepLog of existingStepLogs) {
+                    if (stepsMap.has(stepLog.routine_step_id)) {
+                        stepLog.completed = stepsMap.get(stepLog.routine_step_id);
+                        await stepLog.save({ transaction });
+                    }
+                    // если шаг не передан – не меняем (оставляем как было)
+                }
+            }
+
+            // 4. Обновить реакции кожи: удаляем старые и создаём новые
+            if (reactions !== undefined) {
+                // удаляем старые SkinReaction и связанные ReactionGroupScore
+                await SkinReaction.destroy({
+                    where: { routine_log_id: routineLogId },
+                    transaction,
+                });
+                await ReactionGroupScore.destroy({
+                    where: { routine_log_id: routineLogId },
+                    transaction,
+                });
+
+                if (reactions && reactions.length) {
+                    for (const reaction of reactions) {
+                        await SkinReaction.create(
+                            {
+                                routine_log_id: routineLogId,
+                                reaction_id: reaction.reaction_id,
+                                score: reaction.score,
+                            },
+                            { transaction }
+                        );
+                    }
+
+                    // Пересчитать групповые оценки
+                    const skinReactions = await SkinReaction.findAll({
+                        where: { routine_log_id: routineLogId },
+                        include: [{ model: Reaction }],
+                        transaction,
+                    });
+
+                    const grouped = {};
+                    for (const item of skinReactions) {
+                        const groupId = item.Reaction.reaction_group_id;
+                        if (!grouped[groupId]) grouped[groupId] = [];
+                        grouped[groupId].push(item.score);
+                    }
+
+                    for (const groupId of Object.keys(grouped)) {
+                        const scores = grouped[groupId];
+                        const average = scores.reduce((acc, val) => acc + val, 0) / scores.length;
+                        await ReactionGroupScore.create(
+                            {
+                                routine_log_id: routineLogId,
+                                reaction_group_id: groupId,
+                                score: average,
+                            },
+                            { transaction }
+                        );
+                    }
+                }
+            }
+
+            // 5. Обновить общую оценку
+            if (overall_score !== undefined) {
+                let overall = await OverallScore.findOne({
+                    where: { routine_log_id: routineLogId },
+                    transaction,
+                });
+                if (overall) {
+                    overall.score = overall_score;
+                    await overall.save({ transaction });
+                } else {
+                    await OverallScore.create(
+                        {
+                            routine_log_id: routineLogId,
+                            score: overall_score,
+                        },
+                        { transaction }
+                    );
+                }
+            }
+
+            await transaction.commit();
+
+            // 6. Вернуть свежие данные (используем существующий getByDate)
+            const completedDate = routineLog.completed_at.toISOString().split('T')[0];
+            return this.getByDate(userId, completedDate);
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
 }
 
 module.exports = new RoutineLogService();

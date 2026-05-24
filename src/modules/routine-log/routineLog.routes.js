@@ -20,4 +20,9 @@ router.get(
   controller.getByDate
 );
 
+router.put(
+  '/:id', 
+  controller.update
+);
+
 module.exports = router;

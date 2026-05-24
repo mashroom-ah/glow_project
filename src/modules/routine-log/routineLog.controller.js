@@ -33,6 +33,19 @@ class RoutineLogController {
       });
     }
   }
+
+  async update(req, res) {
+    try {
+      const result = await routineLogService.update(
+        req.user.user_id,
+        req.params.id,
+        req.body
+      );
+      return res.json(result);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
 }
 
 module.exports =
