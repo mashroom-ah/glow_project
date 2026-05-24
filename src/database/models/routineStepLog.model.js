@@ -28,10 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: 'routine_step_log',
 
-      timestamps: true,
-
-      createdAt: 'created_at',
-      updatedAt: 'updated_at',
+      timestamps: false,
     }
   );
 

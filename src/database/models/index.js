@@ -252,21 +252,33 @@ db.SkinReaction.belongsTo(db.Reaction, {
 
 //ReactionGroupScore
 
-db.RoutineLog.hasMany(db.SkinReaction, {
-  foreignKey: 'routine_log_id',
-});
+db.RoutineLog.hasMany(
+  db.ReactionGroupScore,
+  {
+    foreignKey: 'routine_log_id',
+  }
+);
 
-db.SkinReaction.belongsTo(db.RoutineLog, {
-  foreignKey: 'routine_log_id',
-});
+db.ReactionGroupScore.belongsTo(
+  db.RoutineLog,
+  {
+    foreignKey: 'routine_log_id',
+  }
+);
 
-db.Reaction.hasMany(db.SkinReaction, {
-  foreignKey: 'reaction_id',
-});
+db.ReactionGroup.hasMany(
+  db.ReactionGroupScore,
+  {
+    foreignKey: 'reaction_group_id',
+  }
+);
 
-db.SkinReaction.belongsTo(db.Reaction, {
-  foreignKey: 'reaction_id',
-});
+db.ReactionGroupScore.belongsTo(
+  db.ReactionGroup,
+  {
+    foreignKey: 'reaction_group_id',
+  }
+);
 
 //OverallScore
 

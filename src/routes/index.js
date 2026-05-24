@@ -7,6 +7,7 @@ const productRoutes = require('../modules/product/product.routes');
 const componentRoutes = require('../modules/component/component.routes');
 const productGroupRoutes = require('../modules/product-group/productGroup.routes');
 const routineRoutes = require('../modules/routine/routine.routes');
+const routineLogRoutes = require('../modules/routine-log/routineLog.routes')
 
 const router = new Router();
 
@@ -17,5 +18,6 @@ router.use('/products', productRoutes);
 router.use('/product-groups', productGroupRoutes);
 router.use('/components', componentRoutes);
 router.use('/routines', routineRoutes);
+router.use('/routine-log', routineLogRoutes);
 
 module.exports = router;
