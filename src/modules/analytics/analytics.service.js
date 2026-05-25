@@ -5,6 +5,7 @@ const {
     SkinReaction,
     Reaction,
     ReactionGroup,
+    OverallScore
 } = require('../../database/models');
 
 const { Op } = require('sequelize');
