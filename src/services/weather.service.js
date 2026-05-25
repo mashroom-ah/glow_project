@@ -9,11 +9,17 @@ class WeatherService {
       'https://api.weatherapi.com/v1/forecast.json',
       {
         params: {
-          key: process.env.WEATHER_API_KEY,
+          key:
+            process.env.WEATHER_API_KEY,
+
           q: location,
+
           days: 1,
+
           dt: date,
+
           aqi: 'no',
+
           alerts: 'no',
         },
       }
@@ -38,11 +44,23 @@ class WeatherService {
         uv_index
       );
 
+    const hydration_multiplier =
+      this.calculateHydrationMultiplier({
+        temperature_avg,
+        humidity_avg,
+        uv_index,
+      });
+
     return {
       temperature_avg,
+
       humidity_avg,
+
       uv_index,
+
       recommended_spf,
+
+      hydration_multiplier,
     };
   }
 
@@ -65,13 +83,9 @@ class WeatherService {
 
     if (temperature_avg >= 30) {
       multiplier += 0.2;
-    } else if (
-      temperature_avg >= 25
-    ) {
+    } else if (temperature_avg >= 25) {
       multiplier += 0.1;
-    } else if (
-      temperature_avg >= 20
-    ) {
+    } else if (temperature_avg >= 20) {
       multiplier += 0.05;
     }
 
@@ -79,13 +93,9 @@ class WeatherService {
 
     if (humidity_avg <= 20) {
       multiplier += 0.15;
-    } else if (
-      humidity_avg <= 35
-    ) {
+    } else if (humidity_avg <= 35) {
       multiplier += 0.1;
-    } else if (
-      humidity_avg <= 50
-    ) {
+    } else if (humidity_avg <= 50) {
       multiplier += 0.05;
     }
 
@@ -102,17 +112,12 @@ class WeatherService {
     );
   }
 
-  calculateTargetAmount(
+  calculateTargetWater(
     waterAvg,
-    environment
+    hydrationMultiplier
   ) {
-    const multiplier =
-      this.calculateHydrationMultiplier(
-        environment
-      );
-
     return Math.round(
-      waterAvg * multiplier
+      waterAvg * hydrationMultiplier
     );
   }
 }

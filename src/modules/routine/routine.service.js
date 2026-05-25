@@ -9,6 +9,10 @@ const {
 } = require('../../database/models');
 
 const {
+  formatRoutine,
+} = require('./routine.formatter');
+
+const {
   validateRoutine,
 } = require('./routineValidation');
 
@@ -23,19 +27,24 @@ class RoutineService {
 
     if (data.steps?.length) {
       for (const step of data.steps) {
-        const product = await Product.findByPk(
-          step.product_id
-        );
+        const product =
+          await Product.findByPk(
+            step.product_id
+          );
 
         if (!product) {
-          throw new Error('Product not found');
+          throw new Error(
+            'Product not found'
+          );
         }
 
         if (product.component_id) {
           const allowed =
             await GroupComponent.findOne({
               where: {
-                group_id: product.group_id,
+                group_id:
+                  product.group_id,
+
                 component_id:
                   product.component_id,
               },
@@ -49,13 +58,22 @@ class RoutineService {
         }
 
         await RoutineStep.create({
-          routine_id: routine.routine_id,
-          product_id: step.product_id,
-          step_order: step.step_order,
+          routine_id:
+            routine.routine_id,
+
+          product_id:
+            step.product_id,
+
+          step_order:
+            step.step_order,
+
           frequency_type:
-            step.frequency_type || 'daily',
+            step.frequency_type ||
+            'daily',
+
           frequency_value:
-            step.frequency_value || 0,
+            step.frequency_value ||
+            0,
         });
       }
     }
@@ -67,33 +85,36 @@ class RoutineService {
   }
 
   async getAll(userId) {
-    const routines = await Routine.findAll({
-      where: {
-        user_id: userId,
-        is_active: true,
-      },
-
-      include: [
-        {
-          model: RoutineStep,
-
-          include: [
-            {
-              model: Product,
-
-              include: [
-                ProductGroup,
-                ActiveComponent,
-              ],
-            },
-          ],
+    const routines =
+      await Routine.findAll({
+        where: {
+          user_id: userId,
+          is_active: true,
         },
-      ],
-    });
+
+        include: [
+          {
+            model: RoutineStep,
+
+            include: [
+              {
+                model: Product,
+
+                include: [
+                  ProductGroup,
+                  ActiveComponent,
+                ],
+              },
+            ],
+          },
+        ],
+      });
 
     routines.forEach((routine) => {
       routine.RoutineSteps.sort(
-        (a, b) => a.step_order - b.step_order
+        (a, b) =>
+          a.step_order -
+          b.step_order
       );
     });
 
@@ -110,85 +131,97 @@ class RoutineService {
       );
     });
 
-    return routines;
+    return routines.map(
+      formatRoutine
+    );
   }
 
   async getById(userId, routineId) {
-    const routine = await Routine.findOne({
-      where: {
-        routine_id: routineId,
-        user_id: userId,
-        is_active: true,
-      },
-
-      include: [
-        {
-          model: RoutineStep,
-
-          include: [
-            {
-              model: Product,
-
-              include: [
-                ProductGroup,
-                ActiveComponent,
-              ],
-            },
-          ],
+    const routine =
+      await Routine.findOne({
+        where: {
+          routine_id: routineId,
+          user_id: userId,
+          is_active: true,
         },
-      ],
-    });
+
+        include: [
+          {
+            model: RoutineStep,
+
+            include: [
+              {
+                model: Product,
+
+                include: [
+                  ProductGroup,
+                  ActiveComponent,
+                ],
+              },
+            ],
+          },
+        ],
+      });
 
     if (!routine) {
-      throw new Error('Routine not found');
+      throw new Error(
+        'Routine not found'
+      );
     }
 
     routine.RoutineSteps.sort(
-      (a, b) => a.step_order - b.step_order
+      (a, b) =>
+        a.step_order -
+        b.step_order
     );
 
-    return routine;
+    return formatRoutine(routine);
   }
 
   async getByDate(userId, date) {
-    const routines = await Routine.findAll({
-      where: {
-        user_id: userId,
-        is_active: true,
-      },
-
-      include: [
-        {
-          model: RoutineStep,
-
-          include: [
-            {
-              model: Product,
-
-              include: [
-                ProductGroup,
-                ActiveComponent,
-              ],
-            },
-          ],
+    const routines =
+      await Routine.findAll({
+        where: {
+          user_id: userId,
+          is_active: true,
         },
-      ],
-    });
 
-    const targetDate = new Date(date);
+        include: [
+          {
+            model: RoutineStep,
 
-    targetDate.setHours(0, 0, 0, 0);
+            include: [
+              {
+                model: Product,
+
+                include: [
+                  ProductGroup,
+                  ActiveComponent,
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+    const targetDate =
+      new Date(date);
+
+    targetDate.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
     const dayOfWeek =
       targetDate.getDay();
 
-    const startOfDay = new Date(
-      targetDate
-    );
+    const startOfDay =
+      new Date(targetDate);
 
-    const endOfDay = new Date(
-      targetDate
-    );
+    const endOfDay =
+      new Date(targetDate);
 
     endOfDay.setHours(
       23,
@@ -234,7 +267,8 @@ class RoutineService {
               'every_n_days'
             ) {
               if (
-                step.frequency_value <= 0
+                step.frequency_value <=
+                0
               ) {
                 return false;
               }
@@ -252,7 +286,8 @@ class RoutineService {
               );
 
               const diffMs =
-                targetDate - createdAt;
+                targetDate -
+                createdAt;
 
               const diffDays =
                 Math.floor(
@@ -277,7 +312,8 @@ class RoutineService {
 
       plainRoutine.RoutineSteps.sort(
         (a, b) =>
-          a.step_order - b.step_order
+          a.step_order -
+          b.step_order
       );
 
       const existingLog =
@@ -306,24 +342,35 @@ class RoutineService {
         plainRoutine.RoutineSteps
           .length > 0
       ) {
-        result.push(plainRoutine);
+        result.push(
+          formatRoutine(
+            plainRoutine
+          )
+        );
       }
     }
 
     return result;
   }
 
-  async update(userId, routineId, data) {
-    const oldRoutine = await Routine.findOne({
-      where: {
-        routine_id: routineId,
-        user_id: userId,
-        is_active: true,
-      },
-    });
+  async update(
+    userId,
+    routineId,
+    data
+  ) {
+    const oldRoutine =
+      await Routine.findOne({
+        where: {
+          routine_id: routineId,
+          user_id: userId,
+          is_active: true,
+        },
+      });
 
     if (!oldRoutine) {
-      throw new Error('Routine not found');
+      throw new Error(
+        'Routine not found'
+      );
     }
 
     await oldRoutine.update({
@@ -331,31 +378,43 @@ class RoutineService {
       archived_at: new Date(),
     });
 
-    const newRoutine = await Routine.create({
-      user_id: userId,
-      routine_type: data.routine_type,
-    });
+    const newRoutine =
+      await Routine.create({
+        user_id: userId,
+        routine_type:
+          data.routine_type,
+      });
 
     if (data.steps?.length) {
       for (const step of data.steps) {
-        const product = await Product.findByPk(
-          step.product_id
-        );
+        const product =
+          await Product.findByPk(
+            step.product_id
+          );
 
         if (!product) {
-          throw new Error('Product not found');
+          throw new Error(
+            'Product not found'
+          );
         }
 
         await RoutineStep.create({
-          routine_id: newRoutine.routine_id,
-          product_id: step.product_id,
-          step_order: step.step_order,
+          routine_id:
+            newRoutine.routine_id,
+
+          product_id:
+            step.product_id,
+
+          step_order:
+            step.step_order,
 
           frequency_type:
-            step.frequency_type || 'daily',
+            step.frequency_type ||
+            'daily',
 
           frequency_value:
-            step.frequency_value || 0,
+            step.frequency_value ||
+            0,
         });
       }
     }
@@ -367,16 +426,19 @@ class RoutineService {
   }
 
   async delete(userId, routineId) {
-    const routine = await Routine.findOne({
-      where: {
-        routine_id: routineId,
-        user_id: userId,
-        is_active: true,
-      },
-    });
+    const routine =
+      await Routine.findOne({
+        where: {
+          routine_id: routineId,
+          user_id: userId,
+          is_active: true,
+        },
+      });
 
     if (!routine) {
-      throw new Error('Routine not found');
+      throw new Error(
+        'Routine not found'
+      );
     }
 
     await routine.update({
@@ -391,44 +453,55 @@ class RoutineService {
   }
 
   async validate(data) {
-    const productIds = data.steps.map(
-      (step) => step.product_id
-    );
+    const productIds =
+      data.steps.map(
+        (step) => step.product_id
+      );
 
     const products =
       await Product.findAll({
         where: {
-          product_id: productIds,
+          product_id:
+            productIds,
         },
 
         include: [
           {
             model: ProductGroup,
 
-            attributes: ['group_name'],
+            attributes: [
+              'group_name',
+            ],
           },
 
           {
-            model: ActiveComponent,
+            model:
+              ActiveComponent,
 
-            attributes: ['component_name'],
+            attributes: [
+              'component_name',
+            ],
           },
         ],
       });
 
     const normalizedProducts =
-      products.map((product) => ({
-        product_name:
-          product.product_name,
+      products.map(
+        (product) => ({
+          product_name:
+            product.product_name,
 
-        group_name:
-          product.ProductGroup
-            .group_name,
+          group_name:
+            product.ProductGroup
+              .group_name,
 
-        component_name:
-          product.ActiveComponent
-            ?.component_name || null,
-      }));
+          component_name:
+            product
+              .ActiveComponent
+              ?.component_name ||
+            null,
+        })
+      );
 
     return validateRoutine(
       normalizedProducts
@@ -436,4 +509,5 @@ class RoutineService {
   }
 }
 
-module.exports = new RoutineService();
+module.exports =
+  new RoutineService();

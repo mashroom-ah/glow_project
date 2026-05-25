@@ -2,6 +2,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { AppUser, RefreshToken } = require('../../database/models');
+const {
+    calculateBaseWater,
+} = require('../../utils/water.utils');
+
+const waterDailyService = require(
+    '../../services/waterDaily.service'
+);
 
 class AuthService {
     async register(data) {
@@ -15,18 +22,46 @@ class AuthService {
             throw new Error('User already exists');
         }
 
-        const hashedPassword = await bcrypt.hash(data.password, 10);
+        const hashedPassword = await bcrypt.hash(
+            data.password,
+            10
+        );
+
+        // рассчитываем базовую норму воды
+
+        const waterAvg =
+            calculateBaseWater({
+                weight: data.weight,
+                activity_level:
+                    data.activity_level,
+            });
 
         const user = await AppUser.create({
             email: data.email,
+
             password_hash: hashedPassword,
+
             name: data.name,
+
             city: data.city,
+
             height: data.height,
+
             weight: data.weight,
+
             birth_date: data.birth_date,
-            activity_level: data.activity_level,
+
+            activity_level:
+                data.activity_level,
+
+            water_avg: waterAvg,
         });
+
+        // создаём environment + water log на сегодня
+
+        await waterDailyService.createTodayData(
+            user
+        );
 
         return this.generateAuthResponse(user);
     }
@@ -143,13 +178,13 @@ class AuthService {
         }
 
         const token = await RefreshToken.findOne({
-            where:{
+            where: {
                 token: refreshToken,
             }
         });
 
         if (!token) {
-            throw new Error ('Token not found');
+            throw new Error('Token not found');
         }
 
         token.revoked = true;

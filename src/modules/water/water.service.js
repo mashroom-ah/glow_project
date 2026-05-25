@@ -5,7 +5,8 @@ const {
 class WaterService {
   async getToday(userId) {
     const today = new Date()
-      .toLocaleDateString('en-CA');
+      .toISOString()
+      .split('T')[0];
 
     const waterLog =
       await WaterLog.findOne({
@@ -33,17 +34,9 @@ class WaterService {
   }
 
   async addWater(userId, amount) {
-    if (
-      !amount ||
-      amount <= 0
-    ) {
-      throw new Error(
-        'Invalid amount'
-      );
-    }
-
     const today = new Date()
-      .toLocaleDateString('en-CA');
+      .toISOString()
+      .split('T')[0];
 
     const waterLog =
       await WaterLog.findOne({
@@ -59,8 +52,7 @@ class WaterService {
       );
     }
 
-    waterLog.achieved_amount +=
-      amount;
+    waterLog.achieved_amount += amount;
 
     await waterLog.save();
 
@@ -71,17 +63,9 @@ class WaterService {
   }
 
   async removeWater(userId, amount) {
-    if (
-      !amount ||
-      amount <= 0
-    ) {
-      throw new Error(
-        'Invalid amount'
-      );
-    }
-
     const today = new Date()
-      .toLocaleDateString('en-CA');
+      .toISOString()
+      .split('T')[0];
 
     const waterLog =
       await WaterLog.findOne({
@@ -100,8 +84,7 @@ class WaterService {
     waterLog.achieved_amount =
       Math.max(
         0,
-        waterLog.achieved_amount -
-          amount
+        waterLog.achieved_amount - amount
       );
 
     await waterLog.save();
