@@ -11,6 +11,7 @@ const routineLogRoutes = require('../modules/routine-log/routineLog.routes');
 const analyticsRoutes = require('../modules/analytics/analytics.routes');
 const skinReactionRoutes = require('../modules/skin-reactions/skinReaction.routes');
 const waterRoutes = require('../modules/water/water.routes');
+const notificationRoutes = require('../modules/notification/notification.routes');
 
 const router = new Router();
 
@@ -25,5 +26,6 @@ router.use('/routine-log', routineLogRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/skin-reactions', skinReactionRoutes);
 router.use('/water', waterRoutes);
+router.use('/notifications', notificationRoutes);
 
 module.exports = router;

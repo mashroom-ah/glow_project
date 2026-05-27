@@ -14,11 +14,18 @@ class AnalyticsService {
     async getRoutineAnalytics(
         userId,
         type,
+        period,
         endDate
     ) {
         if (!type) {
             throw new Error(
                 'type is required'
+            );
+        }
+
+        if (!period) {
+            throw new Error(
+                'period is required'
             );
         }
 
@@ -41,9 +48,27 @@ class AnalyticsService {
         const start =
             new Date(end);
 
-        start.setDate(
-            start.getDate() - 6
-        );
+        let totalDays = 7;
+
+        if (period === 'week') {
+            totalDays = 7;
+
+            start.setDate(
+                start.getDate() - 6
+            );
+        } else if (
+            period === 'month'
+        ) {
+            totalDays = 30;
+
+            start.setDate(
+                start.getDate() - 29
+            );
+        } else {
+            throw new Error(
+                'Invalid period'
+            );
+        }
 
         start.setHours(
             0,
@@ -70,7 +95,8 @@ class AnalyticsService {
                         model: Routine,
 
                         where: {
-                            routine_type: type,
+                            routine_type:
+                                type,
                         },
                     },
 
@@ -85,7 +111,7 @@ class AnalyticsService {
 
         for (
             let i = 0;
-            i < 7;
+            i < totalDays;
             i++
         ) {
             const currentDate =
@@ -146,6 +172,7 @@ class AnalyticsService {
 
         return {
             type,
+            period,
 
             start_date:
                 start
@@ -317,7 +344,7 @@ class AnalyticsService {
             data,
         };
     }
-    
+
     async getReactionGroupAnalytics(
         userId,
         period,

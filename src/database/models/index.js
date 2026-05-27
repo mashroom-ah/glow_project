@@ -113,6 +113,16 @@ db.WaterLog = require('./waterLog.model')(
   DataTypes
 );
 
+db.NotificationSetting= require('./notifactionSetting.model')(
+  sequelize,
+  DataTypes
+);
+
+db.NotificationSubscription = require('./notifactionSubscription.model')(
+  sequelize,
+  DataTypes
+);
+
 //relstions
 
 // User
@@ -324,6 +334,24 @@ db.WaterLog.belongsTo(db.DailyEnvironment, {
 db.DailyEnvironment.hasOne(db.WaterLog, {
   foreignKey: 'daily_environment_id',
 });
+
+// associations for notifications (use db.*)
+db.AppUser.hasOne(db.NotificationSetting, {
+  foreignKey: 'user_id',
+});
+db.NotificationSetting.belongsTo(db.AppUser, {
+  foreignKey: 'user_id',
+});
+
+db.AppUser.hasMany(db.NotificationSubscription, {
+  foreignKey: 'user_id',
+});
+db.NotificationSubscription.belongsTo(db.AppUser, {
+  foreignKey: 'user_id',
+});
+
+// (optional) if WaterLog was overwritten, reload it correctly:
+// db.WaterLog = require('./waterLog.model')(sequelize, DataTypes);
 
 // associations from models
 

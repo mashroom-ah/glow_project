@@ -11,6 +11,7 @@ class AnalyticsController {
                 await analyticsService.getRoutineAnalytics(
                     req.user.user_id,
                     req.query.type,
+                    req.query.period,
                     req.query.end_date
                 );
 

@@ -1,5 +1,8 @@
 require('dotenv').config();
 require('./cron/water.cron');
+require(
+  './modules/notification/notification.cron'
+);
 
 const express = require('express');
 
