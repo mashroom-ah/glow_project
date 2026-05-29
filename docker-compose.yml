@@ -1,11 +1,13 @@
 services:
   postgres:
     image: postgres:16
-    container_name: glow_postgres
+
+    container_name: glow_backend_postgres
+
     restart: always
 
     environment:
-      POSTGRES_DB: glow_db
+      POSTGRES_DB: glow_backend_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
@@ -13,11 +15,13 @@ services:
       - "5433:5432"
 
     volumes:
-      - glow_postgres_data:/var/lib/postgresql/data
+      - glow_backend_postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: .
-    container_name: glow_backend
+    build:
+      context: ./backend
+
+    container_name: glow_backend_api
 
     restart: always
 
@@ -25,14 +29,14 @@ services:
       - "5000:5000"
 
     env_file:
-      - .env
+      - ./backend/.env
 
     depends_on:
       - postgres
 
     volumes:
-      - .:/app
+      - ./backend:/app
       - /app/node_modules
 
 volumes:
-  glow_postgres_data:
+  glow_backend_postgres_data:

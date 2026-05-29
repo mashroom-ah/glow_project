@@ -3,9 +3,9 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      'notification_setting',
+      'notification_subscription',
       {
-        notification_setting_id: {
+        subscription_id: {
           type: Sequelize.UUID,
           defaultValue:
             Sequelize.UUIDV4,
@@ -17,50 +17,28 @@ module.exports = {
         user_id: {
           type: Sequelize.UUID,
           allowNull: false,
-          unique: true,
 
           references: {
-            model: 'user',
+            model: 'app_user',
             key: 'user_id',
           },
 
           onDelete: 'CASCADE',
         },
 
-        push_enabled: {
-          type: Sequelize.BOOLEAN,
+        endpoint: {
+          type: Sequelize.TEXT,
           allowNull: false,
-          defaultValue: true,
         },
 
-        morning_enabled: {
-          type: Sequelize.BOOLEAN,
+        p256dh: {
+          type: Sequelize.TEXT,
           allowNull: false,
-          defaultValue: true,
         },
 
-        morning_time: {
-          type: Sequelize.TIME,
-          allowNull: true,
-          defaultValue: '08:00:00',
-        },
-
-        evening_enabled: {
-          type: Sequelize.BOOLEAN,
+        auth: {
+          type: Sequelize.TEXT,
           allowNull: false,
-          defaultValue: true,
-        },
-
-        evening_time: {
-          type: Sequelize.TIME,
-          allowNull: true,
-          defaultValue: '21:00:00',
-        },
-
-        timezone: {
-          type: Sequelize.STRING,
-          allowNull: false,
-          defaultValue: 'UTC',
         },
 
         created_at: {
@@ -82,7 +60,7 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.dropTable(
-      'notification_setting'
+      'notification_subscription'
     );
   },
 };
