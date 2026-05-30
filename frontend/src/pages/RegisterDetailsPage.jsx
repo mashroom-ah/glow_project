@@ -70,7 +70,7 @@ export default function RegisterDetailsPage() {
   return (
     <div className="auth-page">
       <div className="auth-wrapper">
-        <h1 className="auth-page-title">Информация о себе</h1>
+        <h1 className="auth-page-title">Заполните информацию о себе</h1>
         <div className="auth-card">
           <div className="auth-form">
             <div className="input-group">

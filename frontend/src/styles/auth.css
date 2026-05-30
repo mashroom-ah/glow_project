@@ -153,7 +153,7 @@
 }
 
 .auth-page-title {
-  font-size: clamp(38px, 6vw, 56px);
+  font-size: clamp(35px, 5vw, 45px);
 
   font-weight: 400;
 
@@ -320,7 +320,7 @@
   }
 
   .auth-page-title {
-    font-size: 60px;
+    font-size: clamp(40px, 5vw, 53px);
 
     margin-bottom: 38px;
   }
