@@ -1,0 +1,17 @@
+:root {
+  --bg: #fff5f8;
+
+  --primary: #f7c8d7;
+  --primary-dark: #e5aebe;
+
+  --text: #3b2d33;
+  --text-light: #6e5b62;
+
+  --card: rgba(255, 255, 255, 0.85);
+
+  --input-bg: #ffffff;
+
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+  --radius: 28px;
+}
