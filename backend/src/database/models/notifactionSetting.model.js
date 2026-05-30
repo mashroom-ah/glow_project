@@ -42,15 +42,16 @@ module.exports = (
       }
     );
 
-  NotificationSetting.associate =
-    (models) => {
-      NotificationSetting.belongsTo(
-        models.AppUser,
-        {
-          foreignKey: 'user_id',
-        }
-      );
-    };
+  NotificationSetting.associate = (models) => {
+    NotificationSetting.belongsTo(models.AppUser, {
+      foreignKey: 'user_id',
+    });
+
+    NotificationSetting.hasMany(models.NotificationSubscription, {
+      foreignKey: 'user_id',      // поле в NotificationSubscription
+      sourceKey: 'user_id',       // поле в NotificationSetting
+    });
+  };
 
   return NotificationSetting;
 };

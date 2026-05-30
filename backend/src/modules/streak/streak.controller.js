@@ -3,12 +3,18 @@ const streakService =
 
 class streakController {
   async getStreak(req, res) {
-    const streak =
-      await streakService.getUserStreak(
-        req.user.id
-      );
+    try {
+      const result =
+        await streakService.getUserStreak(
+          req.user.id
+        );
 
-    res.json({ streak });
+      return res.json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
   }
 }
 

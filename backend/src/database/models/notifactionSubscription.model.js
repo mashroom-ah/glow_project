@@ -32,15 +32,16 @@ module.exports = (
       }
     );
 
-  NotificationSubscription.associate =
-    (models) => {
-      NotificationSubscription.belongsTo(
-        models.AppUser,
-        {
-          foreignKey: 'user_id',
-        }
-      );
-    };
+  NotificationSubscription.associate = (models) => {
+    NotificationSubscription.belongsTo(models.AppUser, {
+      foreignKey: 'user_id',
+    });
+
+    NotificationSubscription.belongsTo(models.NotificationSetting, {
+      foreignKey: 'user_id',
+      targetKey: 'user_id',
+    });
+  };
 
   return NotificationSubscription;
 };
