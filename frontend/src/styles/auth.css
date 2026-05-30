@@ -2,104 +2,414 @@
   min-height: 100vh;
 }
 
-.home-top {
-  height: 260px;
-  background: var(--primary);
-  border-bottom-left-radius: 120px;
-  border-bottom-right-radius: 120px;
+/* ========================= */
+/* HOME */
+/* ========================= */
+
+.home-page {
+  min-height: 100vh;
+
+  background: var(--background-main);
+
+  overflow: hidden;
+}
+
+.home-wrapper {
+  min-height: 100vh;
 
   display: flex;
+  flex-direction: column;
   align-items: center;
+}
+
+.home-top {
+  width: 100%;
+
+  height: clamp(260px, 33vh, 420px);
+
+  background: var(--half-circle);
+
+  border: clamp(2px, 0.35vw, 4px) solid var(--half-circle-border);
+
+  border-top: none;
+
+  border-bottom-left-radius:
+    clamp(120px, 38vw, 420px);
+
+  border-bottom-right-radius:
+    clamp(120px, 38vw, 420px);
+
+  display: flex;
   justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+
+  box-shadow: var(--shadow);
+
+  position: relative;
 }
 
 .sakura-image {
-  width: 180px;
+  width: clamp(210px, 52vw, 520px);
+
+  max-height: 92%;
+
+  object-fit: contain;
+
+  transform: translateY(2%);
 }
 
 .home-content {
-  padding: 40px 24px;
-  text-align: center;
+  flex: 1;
+
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+
+  padding:
+    28px 28px 72px;
+}
+
+.home-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .home-title {
-  font-size: 42px;
-  font-weight: 700;
-  margin-bottom: 12px;
+  font-size: clamp(58px, 10vw, 76px);
+
+  font-weight: 400;
+
+  line-height: 1;
+
+  margin-bottom: 26px;
 }
 
 .home-subtitle {
-  color: var(--text-light);
-  margin-bottom: 40px;
+  font-size: clamp(18px, 4vw, 28px);
+
+  line-height: 1.45;
+
+  text-align: center;
+
+  width: clamp(300px, 65vw, 600px);
 }
 
 .main-button {
-  width: 100%;
+  width: clamp(300px, 55vw, 600px);
+
   height: 56px;
 
-  border-radius: 20px;
+  border-radius: 14px;
 
-  background: var(--primary);
-  color: white;
+  background:
+    radial-gradient(circle,
+      var(--button-center) 27%,
+      var(--button-edge) 100%);
 
-  font-size: 18px;
-  font-weight: 600;
+  box-shadow: var(--shadow);
+
+  font-size: 24px;
+
+  transition: var(--transition);
 }
+
+.main-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ========================= */
+/* AUTH */
+/* ========================= */
 
 .auth-page {
   min-height: 100vh;
 
+  background-image: url('/bg-auth.jpg');
+
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 
   display: flex;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
+
+  padding: 28px 18px;
+}
+
+.auth-wrapper {
+  width: 100%;
+  max-width: 460px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-page-title {
+  font-size: clamp(38px, 6vw, 56px);
+
+  font-weight: 400;
+
+  text-align: center;
+
+  line-height: 1.15;
+
+  margin-bottom: 32px;
 }
 
 .auth-card {
   width: 100%;
-  background: var(--card);
 
-  backdrop-filter: blur(12px);
+  background: var(--white);
 
-  border-top-left-radius: 36px;
-  border-top-right-radius: 36px;
+  border: 2px solid var(--form-border);
 
-  padding: 32px 24px;
-}
+  border-radius: 28px;
 
-.auth-title {
-  font-size: 28px;
-  margin-bottom: 24px;
+  padding: 30px 24px;
+
+  box-shadow: var(--shadow);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+
+  gap: 18px;
+}
+
+.input-group {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.input-label {
+  font-size: 18px;
+
+  text-align: left;
 }
 
 .auth-input {
-  height: 54px;
+  width: 100%;
 
-  border-radius: 16px;
-  border: none;
+  height: 50px;
 
-  background: var(--input-bg);
+  border-radius: 14px;
 
-  padding: 0 16px;
+  border: 2px solid var(--form-border);
 
-  font-size: 16px;
+  background: var(--white);
+
+  padding: 0 14px;
+
+  font-size: 17px;
+}
+
+.auth-input::placeholder {
+  color: #7a7a7a;
+}
+
+.auth-select {
+  appearance: none;
 }
 
 .auth-link {
-  text-align: center;
-  margin-top: 16px;
+  width: 100%;
 
-  color: var(--text-light);
+  text-align: left;
+
+  font-size: 18px;
+
+  text-decoration: underline;
+
+  cursor: pointer;
+
+  transition: var(--transition);
 }
 
-.auth-link span {
-  color: var(--primary-dark);
-  font-weight: 600;
+.auth-link:hover {
+  opacity: 0.7;
+}
+
+.auth-form .main-button {
+  width: 100%;
+  max-width: 100%;
+  font-size: 20px;
+}
+
+/* ========================= */
+/* DESKTOP */
+/* ========================= */
+
+@media (min-width: 900px) {
+  .home-wrapper {
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 140px;
+
+    padding: 0 80px;
+  }
+
+  .home-top {
+    width: clamp(600px, 25vw, 800px);
+
+    height: clamp(500px, 40vh, 600px);
+
+    align-self: flex-start;
+
+    border-bottom-left-radius: 200px;
+    border-bottom-right-radius: 200px;
+  }
+
+  .sakura-image {
+    width: clamp(350px, 20vw, 450px);
+  }
+
+  .home-content {
+    max-width: 600px;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+  }
+
+  .home-text-block {
+    align-items: center;
+  }
+
+  .home-title {
+    font-size: 96px;
+
+    margin-bottom: 46px;
+  }
+
+  .home-subtitle {
+    font-size: 30px;
+
+    max-width: 500px;
+
+    margin-bottom: 56px;
+  }
+
+  .main-button {
+    max-width: 320px;
+
+    height: 64px;
+
+    font-size: 28px;
+  }
+
+  .auth-wrapper {
+    max-width: 540px;
+  }
+
+  .auth-page-title {
+    font-size: 60px;
+
+    margin-bottom: 38px;
+  }
+
+  .auth-card {
+    padding: 38px 34px;
+  }
+
+  .input-label {
+    font-size: 20px;
+  }
+
+  .auth-input {
+    height: 56px;
+
+    font-size: 18px;
+  }
+
+  .auth-link {
+    font-size: 20px;
+  }
+
+  .auth-form .main-button {
+    font-size: 24px;
+  }
+
+  .auth-form {
+    gap: 22px;
+  }
+}
+
+/* ========================= */
+/* SMALL MOBILE */
+/* ========================= */
+
+@media (max-width: 420px) {
+  .home-top {
+    height: 235px;
+
+    border-bottom-left-radius: clamp(100px, 35vw, 160px);
+    border-bottom-right-radius: 105px;
+  }
+
+  .sakura-image {
+    width: 180px;
+  }
+
+  .home-content {
+    padding:
+      32px 24px 78px;
+  }
+
+  .home-title {
+    font-size: 52px;
+  }
+
+  .home-subtitle {
+    font-size: 18px;
+  }
+
+  .main-button {
+    height: 54px;
+
+    font-size: 22px;
+  }
+
+  .auth-page-title {
+    font-size: 32px;
+  }
+
+  .auth-card {
+    padding: 24px 18px;
+  }
+
+  .input-label {
+    font-size: 16px;
+  }
+
+  .auth-input {
+    height: 48px;
+
+    font-size: 16px;
+  }
+
+  .auth-link {
+    font-size: 16px;
+  }
+
+  .auth-form .main-button {
+    font-size: 18px;
+  }
 }

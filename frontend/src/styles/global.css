@@ -1,3 +1,4 @@
+@import './fonts.css';
 @import './variables.css';
 
 * {
@@ -6,10 +7,25 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
-  background: var(--bg);
-  font-family: sans-serif;
-  color: var(--text);
+  font-family: 'Ledger', serif;
+  color: var(--black);
+
+  background: var(--background-main);
+
+  overflow-x: hidden;
+}
+
+button,
+input,
+select {
+  font-family: 'Ledger', serif;
 }
 
 button {
@@ -20,4 +36,14 @@ button {
 input,
 select {
   outline: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
 }

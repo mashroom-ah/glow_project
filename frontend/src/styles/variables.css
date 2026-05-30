@@ -1,17 +1,25 @@
 :root {
-  --bg: #fff5f8;
+  --background-main: #F0E5D4;
 
-  --primary: #f7c8d7;
-  --primary-dark: #e5aebe;
+  --half-circle: #D9D9D9;
+  --half-circle-border: #9BA4DE;
 
-  --text: #3b2d33;
-  --text-light: #6e5b62;
+  --white: #FFFFFF;
+  --black: #000000;
 
-  --card: rgba(255, 255, 255, 0.85);
+  --form-border: #D9D9D9;
 
-  --input-bg: #ffffff;
+  --button-center: #F8D6D7;
+  --button-edge: #F3BCBE;
 
-  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  --shadow:
+    0 8px 20px rgba(0, 0, 0, 0.12);
 
-  --radius: 28px;
+  --radius-large: 42px;
+  --radius-medium: 24px;
+  --radius-small: 16px;
+
+  --max-width-mobile: 430px;
+
+  --transition: 0.25s ease;
 }
