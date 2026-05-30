@@ -12,6 +12,7 @@ const analyticsRoutes = require('../modules/analytics/analytics.routes');
 const skinReactionRoutes = require('../modules/skin-reactions/skinReaction.routes');
 const waterRoutes = require('../modules/water/water.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
+const streakRoutes = require('../modules/streak/streak.routes');
 
 const router = new Router();
 
@@ -27,5 +28,6 @@ router.use('/analytics', analyticsRoutes);
 router.use('/skin-reactions', skinReactionRoutes);
 router.use('/water', waterRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/streak', streakRoutes);
 
 module.exports = router;
