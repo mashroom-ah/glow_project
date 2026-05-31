@@ -27,11 +27,14 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!validate()) return
+
     try {
       const data = await loginUser(form)
+
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('refresh_token', data.refresh_token)
-      navigate('/')
+
+      navigate('/main')
     } catch (error) {
       alert(error?.response?.data?.message || 'Ошибка входа')
     }

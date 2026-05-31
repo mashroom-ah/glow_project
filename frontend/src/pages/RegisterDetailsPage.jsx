@@ -45,6 +45,7 @@ export default function RegisterDetailsPage() {
 
   const handleRegister = async () => {
     if (!validate()) return
+
     try {
       const payload = {
         ...step1,
@@ -54,15 +55,21 @@ export default function RegisterDetailsPage() {
         birth_date: form.birth_date,
         activity_level: form.activity_level,
       }
+
       const data = await registerUser(payload)
+
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('refresh_token', data.refresh_token)
-      navigate('/')
+
+      localStorage.removeItem('register_step_1')
+
+      navigate('/main')
     } catch (error) {
       if (error?.response?.data?.errors) {
         alert(error.response.data.errors[0].message)
         return
       }
+
       alert(error?.response?.data?.message || 'Ошибка регистрации')
     }
   }

@@ -1,7 +1,9 @@
+name: glow_new
+
 services:
   postgres:
     image: postgres:16
-    container_name: glow_backend_postgres
+    container_name: glow_new_postgres      # новое имя контейнера
     restart: always
     environment:
       POSTGRES_DB: glow_backend_db
@@ -10,12 +12,12 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - glow_backend_postgres_data:/var/lib/postgresql/data
+      - glow_new_postgres_data:/var/lib/postgresql/data   # новый том
 
   backend:
     build:
       context: ./backend
-    container_name: glow_backend_api
+    container_name: glow_new_backend       # новое имя контейнера
     restart: always
     ports:
       - "5000:5000"
@@ -30,16 +32,12 @@ services:
   frontend:
     build:
       context: ./frontend
-
-    container_name: glow_frontend
-
+    container_name: glow_new_frontend      # новое имя контейнера
     restart: always
-
     ports:
       - "3000:80"
-
     depends_on:
       - backend
 
 volumes:
-  glow_backend_postgres_data:
+  glow_new_postgres_data:                  # новый том
