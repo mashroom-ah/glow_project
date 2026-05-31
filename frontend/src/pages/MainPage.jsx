@@ -38,43 +38,24 @@ export default function MainPage() {
   const [streak, setStreak] =
     useState(0)
 
-  const [
-    selectedDate,
-    setSelectedDate,
-  ] = useState(new Date())
+  const [selectedDate, setSelectedDate] =
+    useState(new Date())
 
-  const [logs, setLogs] = useState(
-    []
-  )
+  const [logs, setLogs] = useState([])
 
-  const [
-    allRoutines,
-    setAllRoutines,
-  ] = useState([])
+  const [allRoutines, setAllRoutines] =
+    useState([])
 
   const [reactions, setReactions] =
     useState([])
 
-  const [
-    openedRoutine,
-    setOpenedRoutine,
-  ] = useState(null)
+  const [openedRoutine, setOpenedRoutine] =
+    useState(null)
 
   const [loading, setLoading] =
     useState(true)
 
   const dateInputRef = useRef(null)
-
-  const routinesMap = useMemo(() => {
-    const map = {}
-
-    allRoutines.forEach((routine) => {
-      map[routine.routine_id] =
-        routine
-    })
-
-    return map
-  }, [allRoutines])
 
   const loadPage = async () => {
     try {
@@ -89,6 +70,10 @@ export default function MainPage() {
         )
 
       if (!token) {
+        console.log(
+          'No access token'
+        )
+
         return
       }
 
@@ -96,10 +81,18 @@ export default function MainPage() {
         streakData,
         routinesData,
         reactionsData,
+        logsData,
+        routinesByDate,
       ] = await Promise.all([
         getStreak(),
         getRoutines(),
         getSkinReactions(),
+        getRoutineLogsByDate(
+          formatted
+        ),
+        getRoutinesByDate(
+          formatted
+        ),
       ])
 
       setStreak(
@@ -111,50 +104,60 @@ export default function MainPage() {
       )
 
       const reactionsArray =
-        reactionsData?.reactions || []
+        reactionsData?.reactions ||
+        []
 
       setReactions(reactionsArray)
 
       localStorage.setItem(
         'skin_reactions',
-        JSON.stringify(reactionsArray)
+        JSON.stringify(
+          reactionsArray
+        )
       )
 
-      let logsData =
-        await getRoutineLogsByDate(
-          formatted
+      const preparedLogs =
+        routinesByDate.map(
+          (routine) => {
+            const existingLog =
+              logsData.find(
+                (log) =>
+                  log.routine_id ===
+                  routine.routine_id
+              )
+
+            if (existingLog) {
+              return {
+                ...existingLog,
+                routine_type:
+                  routine.routine_type,
+              }
+            }
+
+            return {
+              ...routine,
+              routine_log_id: null,
+
+              steps:
+                routine.steps.map(
+                  (step) => ({
+                    ...step,
+                    completed: false,
+                  })
+                ),
+            }
+          }
         )
 
-      if (!logsData?.length) {
-        logsData =
-          await getRoutinesByDate(
-            formatted
-          )
-      }
-
       const sortedLogs = [
-        ...(logsData || []),
+        ...preparedLogs,
       ].sort((a, b) => {
-        const routineA =
-          routinesData.find(
-            (routine) =>
-              routine.routine_id ===
-              a.routine_id
-          )
-
-        const routineB =
-          routinesData.find(
-            (routine) =>
-              routine.routine_id ===
-              b.routine_id
-          )
-
         const typeA =
-          routineA?.routine_type ||
+          a.routine_type ||
           'universal'
 
         const typeB =
-          routineB?.routine_type ||
+          b.routine_type ||
           'universal'
 
         return (
@@ -174,7 +177,9 @@ export default function MainPage() {
 
       if (cachedReactions) {
         setReactions(
-          JSON.parse(cachedReactions)
+          JSON.parse(
+            cachedReactions
+          )
         )
       }
     } finally {
@@ -204,9 +209,11 @@ export default function MainPage() {
 
   const openCalendar = () => {
     if (
-      dateInputRef.current?.showPicker
+      dateInputRef.current
+        ?.showPicker
     ) {
       dateInputRef.current.showPicker()
+
       return
     }
 
@@ -241,32 +248,42 @@ export default function MainPage() {
             />
           </button>
 
-          {dates.map((date, index) => {
-            const formatted =
-              formatDateCard(date)
+          {dates.map(
+            (date, index) => {
+              const formatted =
+                formatDateCard(
+                  date
+                )
 
-            return (
-              <button
-                key={index}
-                className={`date-card ${
-                  index === 1
-                    ? 'active'
-                    : ''
-                }`}
-                onClick={() =>
-                  setSelectedDate(date)
-                }
-              >
-                <span className="date-day">
-                  {formatted.day}
-                </span>
+              return (
+                <button
+                  key={index}
+                  className={`date-card ${
+                    index === 1
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setSelectedDate(
+                      date
+                    )
+                  }
+                >
+                  <span className="date-day">
+                    {
+                      formatted.day
+                    }
+                  </span>
 
-                <span className="date-month">
-                  {formatted.month}
-                </span>
-              </button>
-            )
-          })}
+                  <span className="date-month">
+                    {
+                      formatted.month
+                    }
+                  </span>
+                </button>
+              )
+            }
+          )}
 
           <button
             className="date-arrow"
@@ -287,22 +304,23 @@ export default function MainPage() {
             )}
             onChange={(e) =>
               setSelectedDate(
-                new Date(e.target.value)
+                new Date(
+                  e.target.value
+                )
               )
             }
           />
         </div>
 
         <div className="routine-list">
-          {!loading &&
+          {loading ? (
+            <div className="routine-card">
+              Загрузка...
+            </div>
+          ) : logs.length ? (
             logs.map((routine) => {
-              const routineInfo =
-                routinesMap[
-                  routine.routine_id
-                ]
-
               const type =
-                routineInfo?.routine_type ||
+                routine.routine_type ||
                 'universal'
 
               return (
@@ -332,20 +350,24 @@ export default function MainPage() {
                           className="routine-step"
                         >
                           <span className="step-status">
-                            <img
-                              src={
-                                step.completed
-                                  ? '/icons/check.svg'
-                                  : '/icons/cross.svg'
-                              }
-                              alt="status"
-                            />
+                            {step.completed ? (
+                              <img
+                                src="/icons/check.svg"
+                                alt="done"
+                              />
+                            ) : (
+                              <img
+                                src="/icons/cross.svg"
+                                alt="not-done"
+                              />
+                            )}
                           </span>
 
                           <span className="step-name">
                             {
-                              step.product
-                                .product_name
+                              step
+                                .product
+                                ?.product_name
                             }
                           </span>
                         </div>
@@ -357,11 +379,7 @@ export default function MainPage() {
                     className="routine-button"
                     onClick={() =>
                       setOpenedRoutine(
-                        {
-                          ...routine,
-                          routine_type:
-                            type,
-                        }
+                        routine
                       )
                     }
                   >
@@ -369,7 +387,13 @@ export default function MainPage() {
                   </button>
                 </div>
               )
-            })}
+            })
+          ) : (
+            <div className="routine-card">
+              На эту дату рутин
+              нет
+            </div>
+          )}
         </div>
 
         <nav className="bottom-nav">
@@ -416,10 +440,15 @@ export default function MainPage() {
           reactions={reactions}
           date={selectedDate}
           onClose={() =>
-            setOpenedRoutine(null)
+            setOpenedRoutine(
+              null
+            )
           }
           onSuccess={() => {
-            setOpenedRoutine(null)
+            setOpenedRoutine(
+              null
+            )
+
             loadPage()
           }}
         />
