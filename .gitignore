@@ -1,2 +1,43 @@
 node_modules
 .env
+
+# === Тестирование ===
+
+# Покрытие кода
+coverage/
+.nyc_output/
+lcov-report/
+lcov.dat
+
+# Кэш Jest
+.jest-cache/
+.jest-cache-*/
+.cache/jest/
+
+# Отчёты тестов
+test-results/
+junit.xml
+test-report.html
+test-report.json
+*.test-results.json
+
+# Временные БД для тестов
+*.db
+*.sqlite
+*.sqlite3
+test-db.sqlite
+test-db.sqlite3
+
+# Логи тестов
+*.test.log
+test-logs/
+
+# Артефакты тестов
+test-artifacts/
+screenshots/
+test-screenshots/
+
+# Временные файлы
+.tmp-tests/
+.temp/
+tmp-tests/

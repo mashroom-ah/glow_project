@@ -92,8 +92,8 @@
 }
 
 .date-arrow img {
-  width: 18px;
-  height: 18px;
+  width: clamp(18px, 4vw, 32px);
+  height: clamp(18px, 4vw, 32px);
 
   object-fit: contain;
 }
