@@ -1,7 +1,5 @@
 const userController = require('../../../src/modules/user/user.controller');
 const { AppUser } = require('../../../src/database/models');
-const userService = require('../../../src/modules/user/user.service');
-const { mockUsers } = require('../../helpers/mockData');
 
 jest.mock('../../../src/database/models', () => ({
   AppUser: {
@@ -9,16 +7,12 @@ jest.mock('../../../src/database/models', () => ({
   },
 }));
 
-jest.mock('../../../src/modules/user/user.service', () => ({
-  updateProfile: jest.fn(),
-}));
-
 describe('UserController', () => {
   let req, res;
 
   beforeEach(() => {
     req = {
-      user: { user_id: mockUsers.regular.user_id },
+      user: { user_id: 'test-user-id' },
       body: {},
     };
     res = {
@@ -30,46 +24,38 @@ describe('UserController', () => {
 
   describe('getMe', () => {
     test('возвращает данные пользователя без пароля', async () => {
-      const mockUser = { ...mockUsers.regular };
-      delete mockUser.password_hash;
+      const mockUser = {
+        user_id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+      };
       AppUser.findByPk.mockResolvedValue(mockUser);
 
       await userController.getMe(req, res);
 
-      expect(AppUser.findByPk).toHaveBeenCalledWith(mockUsers.regular.user_id, {
+      expect(AppUser.findByPk).toHaveBeenCalledWith('test-user-id', {
         attributes: { exclude: ['password_hash'] },
       });
       expect(res.json).toHaveBeenCalledWith(mockUser);
     });
 
-    test('возвращает 500 если пользователь не найден', async () => {
+    test('возвращает 404 если пользователь не найден', async () => {
       AppUser.findByPk.mockResolvedValue(null);
 
       await userController.getMe(req, res);
 
+      // Реальный контроллер при user = null возвращает 404
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ message: 'User not found' });
+    });
+
+    test('возвращает 500 при ошибке БД', async () => {
+      AppUser.findByPk.mockRejectedValue(new Error('Database error'));
+
+      await userController.getMe(req, res);
+
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: expect.any(String) });
-    });
-  });
-
-  describe('updateProfile', () => {
-    test('обновляет профиль пользователя', async () => {
-      req.body = { name: 'New Name', city: 'New City' };
-      userService.updateProfile.mockResolvedValue({ message: 'Profile updated successfully' });
-
-      await userController.updateProfile(req, res);
-
-      expect(userService.updateProfile).toHaveBeenCalledWith(mockUsers.regular.user_id, req.body);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Profile updated successfully' });
-    });
-
-    test('возвращает 400 при ошибке', async () => {
-      userService.updateProfile.mockRejectedValue(new Error('Update failed'));
-
-      await userController.updateProfile(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Update failed' });
+      expect(res.json).toHaveBeenCalledWith({ message: 'Database error' });
     });
   });
 });

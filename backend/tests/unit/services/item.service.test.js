@@ -1,20 +1,25 @@
 const itemService = require('../../../src/modules/item/item.service');
 const { Item } = require('../../../src/database/models');
 
+// Мокаем утилиты ДО импорта сервиса
+jest.mock('../../../src/utils/expirationDate', () => ({
+  calculateExpirationDate: jest.fn(),
+}));
+
+jest.mock('../../../src/utils/itemStatus', () => ({
+  calculateItemStatus: jest.fn(),
+}));
+
+const { calculateExpirationDate } = require('../../../src/utils/expirationDate');
+const { calculateItemStatus } = require('../../../src/utils/itemStatus');
+
 jest.mock('../../../src/database/models', () => ({
   Item: {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
+    destroy: jest.fn(),
   },
-}));
-
-jest.mock('../../../src/utils/expirationDate', () => ({
-  calculateExpirationDate: jest.fn().mockReturnValue(new Date('2024-12-31')),
-}));
-
-jest.mock('../../../src/utils/itemStatus', () => ({
-  calculateItemStatus: jest.fn().mockReturnValue('valid'),
 }));
 
 describe('ItemService', () => {
@@ -23,6 +28,8 @@ describe('ItemService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    calculateExpirationDate.mockReturnValue(new Date('2024-12-31'));
+    calculateItemStatus.mockReturnValue('valid');
   });
 
   describe('create', () => {
@@ -38,7 +45,6 @@ describe('ItemService', () => {
 
       const result = await itemService.create(userId, itemData);
 
-      // Проверяем, что create был вызван
       expect(Item.create).toHaveBeenCalled();
       const callArgs = Item.create.mock.calls[0][0];
       
@@ -66,6 +72,54 @@ describe('ItemService', () => {
     });
   });
 
+  describe('getById', () => {
+    test('возвращает продукт по ID', async () => {
+      const mockItem = { item_id: itemId, name: 'Product 1' };
+      Item.findOne.mockResolvedValue(mockItem);
+
+      const result = await itemService.getById(userId, itemId);
+
+      expect(Item.findOne).toHaveBeenCalledWith({
+        where: { item_id: itemId, user_id: userId },
+      });
+      expect(result).toEqual(mockItem);
+    });
+
+    test('выбрасывает ошибку если продукт не найден', async () => {
+      Item.findOne.mockResolvedValue(null);
+
+      await expect(itemService.getById(userId, itemId)).rejects.toThrow('Item not found');
+    });
+  });
+
+  describe('update', () => {
+    test('обновляет продукт', async () => {
+      const mockItem = { 
+        update: jest.fn().mockResolvedValue(true),
+      };
+      jest.spyOn(itemService, 'getById').mockResolvedValue(mockItem);
+
+      const result = await itemService.update(userId, itemId, { name: 'New Name' });
+
+      expect(calculateExpirationDate).toHaveBeenCalled();
+      expect(calculateItemStatus).toHaveBeenCalled();
+      expect(mockItem.update).toHaveBeenCalled();
+      expect(result).toEqual(mockItem);
+    });
+  });
+
+  describe('delete', () => {
+    test('удаляет продукт', async () => {
+      const mockItem = { destroy: jest.fn().mockResolvedValue(true) };
+      jest.spyOn(itemService, 'getById').mockResolvedValue(mockItem);
+
+      const result = await itemService.delete(userId, itemId);
+
+      expect(mockItem.destroy).toHaveBeenCalled();
+      expect(result.message).toBe('Item deleted successfully');
+    });
+  });
+
   describe('archive', () => {
     test('архивирует продукт', async () => {
       const mockItem = { save: jest.fn().mockResolvedValue(true), is_active: true };
@@ -76,6 +130,19 @@ describe('ItemService', () => {
       expect(mockItem.is_active).toBe(false);
       expect(mockItem.save).toHaveBeenCalled();
       expect(result.message).toBe('Item archived successfully');
+    });
+  });
+
+  describe('restore', () => {
+    test('восстанавливает продукт из архива', async () => {
+      const mockItem = { save: jest.fn().mockResolvedValue(true), is_active: false };
+      jest.spyOn(itemService, 'getById').mockResolvedValue(mockItem);
+
+      const result = await itemService.restore(userId, itemId);
+
+      expect(mockItem.is_active).toBe(true);
+      expect(mockItem.save).toHaveBeenCalled();
+      expect(result.message).toBe('Item restored successfully');
     });
   });
 });
