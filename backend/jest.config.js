@@ -1,14 +1,30 @@
 module.exports = {
   testEnvironment: 'node',
   verbose: true,
+  
+  // ВАЖНО: исключаем из покрытия то, что не нужно тестировать
   collectCoverageFrom: [
     'src/**/*.js',
-    '!src/server.js',
-    '!src/cron/**',
+    // Исключаем модели БД (они тестируются через интеграционные тесты)
+    '!src/database/models/**',
     '!src/database/migrations/**',
     '!src/database/seeders/**',
+    // Исключаем конфиги
+    '!src/config/**',
+    // Исключаем cron (по вашему запросу)
+    '!src/cron/**',
+    // Исключаем notification (по вашему запросу)
     '!src/modules/notification/**',
+    // Исключаем маршруты (они тестируются через интеграционные тесты)
+    '!src/**/*.routes.js',
+    // Исключаем server.js
+    '!src/server.js',
+    // Исключаем weather.service (требует реального API)
+    '!src/services/weather.service.js',
+    // Исключаем старый файл (дубль)
+    '!src/utils/calculateExpirationDate.js',
   ],
+  
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
@@ -20,19 +36,4 @@ module.exports = {
   moduleNameMapper: {
     '^uuid$': '<rootDir>/tests/__mocks__/uuid.js',
   },
-  // Пороги покрытия временно отключены
-  // coverageThreshold: {
-  //   global: {
-  //     statements: 60,
-  //     branches: 50,
-  //     functions: 60,
-  //     lines: 60,
-  //   },
-  //   './src/utils/**/*.js': {
-  //     statements: 90,
-  //     branches: 85,
-  //     functions: 100,
-  //     lines: 90,
-  //   },
-  // },
 };

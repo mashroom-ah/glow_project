@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 
-// Мокаем ВСЕ зависимости до импорта роутов
+// Мокаем зависимости
 jest.mock('../../src/database/models', () => ({
   AppUser: {
     findOne: jest.fn(),
@@ -33,7 +33,6 @@ jest.mock('jsonwebtoken', () => ({
   verify: jest.fn().mockReturnValue({ user_id: 'test-user-id' }),
 }));
 
-// Мокаем config, чтобы избежать ошибки
 jest.mock('../../src/config/config', () => ({
   development: {
     username: 'test',
@@ -53,7 +52,6 @@ jest.mock('../../src/config/config', () => ({
   },
 }));
 
-// Мокаем authMiddleware
 jest.mock('../../src/middlewares/auth.middleware', () => {
   return (req, res, next) => {
     req.user = { user_id: 'test-user-id' };
@@ -61,7 +59,6 @@ jest.mock('../../src/middlewares/auth.middleware', () => {
   };
 });
 
-// Мокаем auth.service напрямую, чтобы не загружать зависимости
 jest.mock('../../src/modules/auth/auth.service', () => ({
   register: jest.fn(),
   login: jest.fn(),
@@ -71,11 +68,8 @@ jest.mock('../../src/modules/auth/auth.service', () => ({
 
 const authService = require('../../src/modules/auth/auth.service');
 
-// Создаём приложение и подключаем роуты
 const app = express();
 app.use(express.json());
-
-// Подключаем роуты (теперь зависимости замоканы)
 app.use('/auth', require('../../src/modules/auth/auth.routes'));
 
 describe('Auth Routes', () => {
@@ -153,11 +147,5 @@ describe('Auth Routes', () => {
     });
   });
 
-  describe('GET /auth/me', () => {
-    test('возвращает данные пользователя', async () => {
-      const response = await request(app).get('/auth/me');
-
-      expect(response.status).toBe(200);
-    });
-  });
+  // GET /auth/me удалён — он тестируется в user.controller.test.js
 });
