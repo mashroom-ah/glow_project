@@ -45,52 +45,68 @@ export default function MainPage() {
   const [streak, setStreak] =
     useState(0)
 
-  const [selectedDate, setSelectedDate] =
-    useState(new Date())
+  const [
+    selectedDate,
+    setSelectedDate,
+  ] = useState(new Date())
 
-  const [logs, setLogs] =
-    useState([])
+  const [logs, setLogs] = useState(
+    []
+  )
 
-  const [allRoutines, setAllRoutines] =
-    useState([])
+  const [
+    allRoutines,
+    setAllRoutines,
+  ] = useState([])
 
   const [reactions, setReactions] =
     useState([])
 
-  const [openedRoutine, setOpenedRoutine] =
-    useState(null)
+  const [
+    openedRoutine,
+    setOpenedRoutine,
+  ] = useState(null)
 
   const [loading, setLoading] =
     useState(true)
 
-  const dateInputRef =
-    useRef(null)
+  const dateInputRef = useRef(null)
+
+  const routinesMap = useMemo(() => {
+    const map = {}
+
+    allRoutines.forEach((routine) => {
+      map[routine.routine_id] =
+        routine
+    })
+
+    return map
+  }, [allRoutines])
 
   const loadPage = async () => {
     try {
       setLoading(true)
 
       const formatted =
-        formatDateApi(
-          selectedDate
+        formatDateApi(selectedDate)
+
+      const token =
+        localStorage.getItem(
+          'access_token'
         )
+
+      if (!token) {
+        return
+      }
 
       const [
         streakData,
         routinesData,
         reactionsData,
-        logsData,
-        routinesByDate,
       ] = await Promise.all([
         getStreak(),
         getRoutines(),
         getSkinReactions(),
-        getRoutineLogsByDate(
-          formatted
-        ),
-        getRoutinesByDate(
-          formatted
-        ),
       ])
 
       setStreak(
@@ -102,54 +118,50 @@ export default function MainPage() {
       )
 
       const reactionsArray =
-        reactionsData?.reactions ||
-        []
+        reactionsData?.reactions || []
 
       setReactions(reactionsArray)
 
-      const preparedLogs =
-        routinesByDate.map(
-          (routine) => {
-            const existingLog =
-              logsData.find(
-                (log) =>
-                  log.routine_id ===
-                  routine.routine_id
-              )
+      localStorage.setItem(
+        'skin_reactions',
+        JSON.stringify(reactionsArray)
+      )
 
-            if (existingLog) {
-              return {
-                ...existingLog,
-                routine_type:
-                  routine.routine_type,
-              }
-            }
-
-            return {
-              ...routine,
-              routine_log_id:
-                null,
-
-              steps:
-                routine.steps.map(
-                  (step) => ({
-                    ...step,
-                    completed: false,
-                  })
-                ),
-            }
-          }
+      let logsData =
+        await getRoutineLogsByDate(
+          formatted
         )
 
+      if (!logsData?.length) {
+        logsData =
+          await getRoutinesByDate(
+            formatted
+          )
+      }
+
       const sortedLogs = [
-        ...preparedLogs,
+        ...(logsData || []),
       ].sort((a, b) => {
+        const routineA =
+          routinesData.find(
+            (routine) =>
+              routine.routine_id ===
+              a.routine_id
+          )
+
+        const routineB =
+          routinesData.find(
+            (routine) =>
+              routine.routine_id ===
+              b.routine_id
+          )
+
         const typeA =
-          a.routine_type ||
+          routineA?.routine_type ||
           'universal'
 
         const typeB =
-          b.routine_type ||
+          routineB?.routine_type ||
           'universal'
 
         return (
@@ -161,6 +173,17 @@ export default function MainPage() {
       setLogs(sortedLogs)
     } catch (error) {
       console.log(error)
+
+      const cachedReactions =
+        localStorage.getItem(
+          'skin_reactions'
+        )
+
+      if (cachedReactions) {
+        setReactions(
+          JSON.parse(cachedReactions)
+        )
+      }
     } finally {
       setLoading(false)
     }
@@ -174,25 +197,23 @@ export default function MainPage() {
     return [
       new Date(
         selectedDate.getTime() -
-          86400000
+        86400000
       ),
 
       selectedDate,
 
       new Date(
         selectedDate.getTime() +
-          86400000
+        86400000
       ),
     ]
   }, [selectedDate])
 
   const openCalendar = () => {
     if (
-      dateInputRef.current
-        ?.showPicker
+      dateInputRef.current?.showPicker
     ) {
       dateInputRef.current.showPicker()
-
       return
     }
 
@@ -216,6 +237,147 @@ export default function MainPage() {
           </p>
         </div>
 
+        <div className="dates-row">
+          <button
+            className="date-arrow"
+            onClick={openCalendar}
+          >
+            <img
+              src="/icons/arrow-left.svg"
+              alt="prev"
+            />
+          </button>
+
+          {dates.map((date, index) => {
+            const formatted =
+              formatDateCard(date)
+
+            return (
+              <button
+                key={index}
+                className={`date-card ${index === 1
+                  ? 'active'
+                  : ''
+                  }`}
+                onClick={() =>
+                  setSelectedDate(date)
+                }
+              >
+                <span className="date-day">
+                  {formatted.day}
+                </span>
+
+                <span className="date-month">
+                  {formatted.month}
+                </span>
+              </button>
+            )
+          })}
+
+          <button
+            className="date-arrow"
+            onClick={openCalendar}
+          >
+            <img
+              src="/icons/arrow-right.svg"
+              alt="next"
+            />
+          </button>
+
+          <input
+            ref={dateInputRef}
+            type="date"
+            className="hidden-date-input"
+            value={formatDateApi(
+              selectedDate
+            )}
+            onChange={(e) =>
+              setSelectedDate(
+                new Date(e.target.value)
+              )
+            }
+          />
+        </div>
+
+        <div className="routine-list">
+          {!loading &&
+            logs.map((routine) => {
+              const routineInfo =
+                routinesMap[
+                routine.routine_id
+                ]
+
+              const type =
+                routineInfo?.routine_type ||
+                'universal'
+
+              return (
+                <div
+                  key={
+                    routine.routine_id
+                  }
+                  className="routine-card"
+                >
+                  <div
+                    className={`routine-label ${type}`}
+                  >
+                    {
+                      routineTitles[
+                      type
+                      ]
+                    }
+                  </div>
+
+                  <div className="routine-steps">
+                    {routine.steps.map(
+                      (step) => (
+                        <div
+                          key={
+                            step.routine_step_id
+                          }
+                          className="routine-step"
+                        >
+                          <span className="step-status">
+                            <img
+                              src={
+                                step.completed
+                                  ? '/icons/check.svg'
+                                  : '/icons/cross.svg'
+                              }
+                              alt="status"
+                            />
+                          </span>
+
+                          <span className="step-name">
+                            {
+                              step.product
+                                .product_name
+                            }
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    className="routine-button"
+                    onClick={() =>
+                      setOpenedRoutine(
+                        {
+                          ...routine,
+                          routine_type:
+                            type,
+                        }
+                      )
+                    }
+                  >
+                    Отметить
+                  </button>
+                </div>
+              )
+            })}
+        </div>
+
         <nav className="bottom-nav">
           <button
             className="nav-item"
@@ -227,7 +389,7 @@ export default function MainPage() {
           >
             <img
               src="/icons/constructor.svg"
-              alt="constructor"
+              alt=""
             />
           </button>
 
@@ -239,7 +401,7 @@ export default function MainPage() {
           >
             <img
               src="/icons/water.svg"
-              alt="water"
+              alt=""
             />
           </button>
 
@@ -251,7 +413,7 @@ export default function MainPage() {
           >
             <img
               src="/icons/home.svg"
-              alt="home"
+              alt=""
             />
           </button>
 
@@ -265,12 +427,11 @@ export default function MainPage() {
           >
             <img
               src="/icons/chart.svg"
-              alt="reports"
+              alt=""
             />
           </button>
 
-          <button
-            className="nav-item"
+          <button className="nav-item"
             onClick={() =>
               navigate(
                 '/profile'
@@ -279,11 +440,26 @@ export default function MainPage() {
           >
             <img
               src="/icons/profile.svg"
-              alt="profile"
+              alt=""
             />
           </button>
         </nav>
       </div>
+
+      {openedRoutine && (
+        <RoutineModal
+          routine={openedRoutine}
+          reactions={reactions}
+          date={selectedDate}
+          onClose={() =>
+            setOpenedRoutine(null)
+          }
+          onSuccess={() => {
+            setOpenedRoutine(null)
+            loadPage()
+          }}
+        />
+      )}
     </div>
   )
 }

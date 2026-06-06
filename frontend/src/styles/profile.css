@@ -36,7 +36,7 @@
 
 .profile-top h1 {
   font-size:
-    clamp(30px, 4vw, 42px);
+    clamp(30px, 4vw, 40px);
 
   line-height: 1;
 }
