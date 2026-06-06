@@ -6,6 +6,10 @@ import {
 } from 'react'
 
 import {
+  useNavigate,
+} from 'react-router-dom'
+
+import {
   getRoutineLogsByDate,
   getRoutines,
   getRoutinesByDate,
@@ -35,13 +39,17 @@ const routineOrder = {
 }
 
 export default function MainPage() {
+  const navigate =
+    useNavigate()
+
   const [streak, setStreak] =
     useState(0)
 
   const [selectedDate, setSelectedDate] =
     useState(new Date())
 
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] =
+    useState([])
 
   const [allRoutines, setAllRoutines] =
     useState([])
@@ -55,27 +63,17 @@ export default function MainPage() {
   const [loading, setLoading] =
     useState(true)
 
-  const dateInputRef = useRef(null)
+  const dateInputRef =
+    useRef(null)
 
   const loadPage = async () => {
     try {
       setLoading(true)
 
       const formatted =
-        formatDateApi(selectedDate)
-
-      const token =
-        localStorage.getItem(
-          'access_token'
+        formatDateApi(
+          selectedDate
         )
-
-      if (!token) {
-        console.log(
-          'No access token'
-        )
-
-        return
-      }
 
       const [
         streakData,
@@ -109,13 +107,6 @@ export default function MainPage() {
 
       setReactions(reactionsArray)
 
-      localStorage.setItem(
-        'skin_reactions',
-        JSON.stringify(
-          reactionsArray
-        )
-      )
-
       const preparedLogs =
         routinesByDate.map(
           (routine) => {
@@ -136,7 +127,8 @@ export default function MainPage() {
 
             return {
               ...routine,
-              routine_log_id: null,
+              routine_log_id:
+                null,
 
               steps:
                 routine.steps.map(
@@ -169,19 +161,6 @@ export default function MainPage() {
       setLogs(sortedLogs)
     } catch (error) {
       console.log(error)
-
-      const cachedReactions =
-        localStorage.getItem(
-          'skin_reactions'
-        )
-
-      if (cachedReactions) {
-        setReactions(
-          JSON.parse(
-            cachedReactions
-          )
-        )
-      }
     } finally {
       setLoading(false)
     }
@@ -237,195 +216,67 @@ export default function MainPage() {
           </p>
         </div>
 
-        <div className="dates-row">
-          <button
-            className="date-arrow"
-            onClick={openCalendar}
-          >
-            <img
-              src="/icons/arrow-left.svg"
-              alt="prev"
-            />
-          </button>
-
-          {dates.map(
-            (date, index) => {
-              const formatted =
-                formatDateCard(
-                  date
-                )
-
-              return (
-                <button
-                  key={index}
-                  className={`date-card ${
-                    index === 1
-                      ? 'active'
-                      : ''
-                  }`}
-                  onClick={() =>
-                    setSelectedDate(
-                      date
-                    )
-                  }
-                >
-                  <span className="date-day">
-                    {
-                      formatted.day
-                    }
-                  </span>
-
-                  <span className="date-month">
-                    {
-                      formatted.month
-                    }
-                  </span>
-                </button>
-              )
-            }
-          )}
-
-          <button
-            className="date-arrow"
-            onClick={openCalendar}
-          >
-            <img
-              src="/icons/arrow-right.svg"
-              alt="next"
-            />
-          </button>
-
-          <input
-            ref={dateInputRef}
-            type="date"
-            className="hidden-date-input"
-            value={formatDateApi(
-              selectedDate
-            )}
-            onChange={(e) =>
-              setSelectedDate(
-                new Date(
-                  e.target.value
-                )
-              )
-            }
-          />
-        </div>
-
-        <div className="routine-list">
-          {loading ? (
-            <div className="routine-card">
-              Загрузка...
-            </div>
-          ) : logs.length ? (
-            logs.map((routine) => {
-              const type =
-                routine.routine_type ||
-                'universal'
-
-              return (
-                <div
-                  key={
-                    routine.routine_id
-                  }
-                  className="routine-card"
-                >
-                  <div
-                    className={`routine-label ${type}`}
-                  >
-                    {
-                      routineTitles[
-                        type
-                      ]
-                    }
-                  </div>
-
-                  <div className="routine-steps">
-                    {routine.steps.map(
-                      (step) => (
-                        <div
-                          key={
-                            step.routine_step_id
-                          }
-                          className="routine-step"
-                        >
-                          <span className="step-status">
-                            {step.completed ? (
-                              <img
-                                src="/icons/check.svg"
-                                alt="done"
-                              />
-                            ) : (
-                              <img
-                                src="/icons/cross.svg"
-                                alt="not-done"
-                              />
-                            )}
-                          </span>
-
-                          <span className="step-name">
-                            {
-                              step
-                                .product
-                                ?.product_name
-                            }
-                          </span>
-                        </div>
-                      )
-                    )}
-                  </div>
-
-                  <button
-                    className="routine-button"
-                    onClick={() =>
-                      setOpenedRoutine(
-                        routine
-                      )
-                    }
-                  >
-                    Отметить
-                  </button>
-                </div>
-              )
-            })
-          ) : (
-            <div className="routine-card">
-              На эту дату рутин
-              нет
-            </div>
-          )}
-        </div>
-
         <nav className="bottom-nav">
-          <button className="nav-item">
+          <button
+            className="nav-item"
+            onClick={() =>
+              navigate(
+                '/constructor'
+              )
+            }
+          >
             <img
               src="/icons/constructor.svg"
               alt="constructor"
             />
           </button>
 
-          <button className="nav-item">
+          <button
+            className="nav-item"
+            onClick={() =>
+              navigate('/water')
+            }
+          >
             <img
               src="/icons/water.svg"
               alt="water"
             />
           </button>
 
-          <button className="nav-item active-nav">
+          <button
+            className="nav-item active-nav"
+            onClick={() =>
+              navigate('/main')
+            }
+          >
             <img
               src="/icons/home.svg"
               alt="home"
             />
           </button>
 
-          <button className="nav-item">
+          <button
+            className="nav-item"
+            onClick={() =>
+              navigate(
+                '/analytics'
+              )
+            }
+          >
             <img
               src="/icons/chart.svg"
               alt="reports"
             />
           </button>
 
-          <button className="nav-item">
+          <button
+            className="nav-item"
+            onClick={() =>
+              navigate(
+                '/profile'
+              )
+            }
+          >
             <img
               src="/icons/profile.svg"
               alt="profile"
@@ -433,26 +284,6 @@ export default function MainPage() {
           </button>
         </nav>
       </div>
-
-      {openedRoutine && (
-        <RoutineModal
-          routine={openedRoutine}
-          reactions={reactions}
-          date={selectedDate}
-          onClose={() =>
-            setOpenedRoutine(
-              null
-            )
-          }
-          onSuccess={() => {
-            setOpenedRoutine(
-              null
-            )
-
-            loadPage()
-          }}
-        />
-      )}
     </div>
   )
 }
