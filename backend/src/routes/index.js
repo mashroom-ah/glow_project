@@ -13,6 +13,7 @@ const skinReactionRoutes = require('../modules/skin-reactions/skinReaction.route
 const waterRoutes = require('../modules/water/water.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
 const streakRoutes = require('../modules/streak/streak.routes');
+const spfRoutes = require('../modules/spf/spf.routes');
 
 const router = new Router();
 
@@ -29,5 +30,6 @@ router.use('/skin-reactions', skinReactionRoutes);
 router.use('/water', waterRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/streak', streakRoutes);
+router.use('/spf', spfRoutes);
 
 module.exports = router;
