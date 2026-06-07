@@ -1,0 +1,239 @@
+.analytics-page {
+  min-height: 100vh;
+  background: #F0E5D4;
+  display: flex;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 28px);
+}
+
+.analytics-container {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2vw, 28px);
+  padding-bottom: 110px;
+}
+
+.analytics-loading,
+.analytics-error {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 22px;
+  font-size: clamp(16px, 3vw, 20px);
+  box-shadow: var(--shadow);
+}
+
+.analytics-error {
+  color: #ea4d4d;
+  background: #fff5f5;
+}
+
+/* Управление */
+.analytics-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: white;
+  border-radius: 22px;
+  padding: clamp(16px, 2vw, 20px);
+  box-shadow: var(--shadow);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group label {
+  font-size: clamp(14px, 2vw, 16px);
+  color: #666;
+}
+
+.period-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.period-btn {
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: #d9d9d9;
+  font-size: clamp(14px, 2vw, 16px);
+  font-family: 'Ledger', serif;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.period-btn.active {
+  background: #7881BB;
+  color: white;
+}
+
+.period-btn:hover:not(.active) {
+  background: #c0c0c0;
+}
+
+.date-picker-wrapper {
+  position: relative;
+}
+
+.date-btn {
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: #d9d9d9;
+  font-size: clamp(14px, 2vw, 16px);
+  font-family: 'Ledger', serif;
+  cursor: pointer;
+}
+
+.date-input-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #d9d9d9;
+  background: white;
+  z-index: 10;
+}
+
+/* Карточки графиков */
+.chart-card {
+  background: white;
+  border-radius: 22px;
+  padding: clamp(20px, 2vw, 24px);
+  box-shadow: var(--shadow);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 400;
+  margin: 0;
+}
+
+.water-type-buttons,
+.routine-type-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.type-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: #d9d9d9;
+  font-size: clamp(12px, 2vw, 14px);
+  font-family: 'Ledger', serif;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.type-btn.active {
+  background: #7881BB;
+  color: white;
+}
+
+.type-btn:hover:not(.active) {
+  background: #c0c0c0;
+}
+
+/* Нет данных */
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: clamp(16px, 3vw, 18px);
+}
+
+/* Tooltip */
+.analytics-tooltip {
+  background: white;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+}
+
+.tooltip-date {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.tooltip-value {
+  margin: 4px 0;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+/* Адаптация под планшеты */
+@media (min-width: 700px) {
+  .analytics-container {
+    max-width: 700px;
+  }
+  
+  .analytics-controls {
+    justify-content: center;
+    gap: 32px;
+  }
+}
+
+@media (min-width: 900px) {
+  .analytics-container {
+    max-width: 1000px;
+  }
+  
+  .analytics-controls {
+    justify-content: center;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .water-type-buttons,
+  .routine-type-buttons {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .type-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .analytics-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .control-group {
+    width: 100%;
+  }
+  
+  .period-buttons {
+    width: 100%;
+  }
+  
+  .period-btn {
+    flex: 1;
+    text-align: center;
+  }
+}
