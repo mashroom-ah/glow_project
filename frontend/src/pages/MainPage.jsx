@@ -22,6 +22,10 @@ import {
   formatDateCard,
 } from '../utils/date'
 
+import {
+  getSPF,
+} from '../api/spfApi'
+
 import RoutineModal from '../components/RoutineModal'
 
 import '../styles/main.css'
@@ -44,6 +48,9 @@ export default function MainPage() {
 
   const [streak, setStreak] =
     useState(0)
+
+  const [spf, setSpf] =
+    useState(null)
 
   const [
     selectedDate,
@@ -103,14 +110,21 @@ export default function MainPage() {
         streakData,
         routinesData,
         reactionsData,
+        spfData,
       ] = await Promise.all([
         getStreak(),
         getRoutines(),
         getSkinReactions(),
+        getSPF(),
       ])
 
       setStreak(
         streakData?.streak || 0
+      )
+
+      setSpf(
+        spfData?.recommended_spf ??
+        0
       )
 
       setAllRoutines(
@@ -297,6 +311,21 @@ export default function MainPage() {
               )
             }
           />
+        </div>
+
+        <div className="spf-banner">
+          <div className="spf-icon">
+            <img
+              src="/icons/warning.svg"
+              alt="spf"
+            />
+          </div>
+
+          <p>
+            {spf === 0
+              ? 'Сегодня SPF не требуется'
+              : `Нанесите SPF-${spf}`}
+          </p>
         </div>
 
         <div className="routine-list">

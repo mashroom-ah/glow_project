@@ -5,7 +5,7 @@ const {
 class SpfService {
     async getSPF(userId) {
         const DailyEnvironment =
-            await WaterLog.findOne({
+            await DailyEnvironment.findOne({
                 where: {
                     user_id: userId,
                 },
