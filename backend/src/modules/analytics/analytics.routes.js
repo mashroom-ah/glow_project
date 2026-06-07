@@ -25,4 +25,9 @@ router.get(
   controller.getReactionGroupAnalytics
 );
 
+router.get(
+  '/water',
+  controller.getWaterAnalytics
+);
+
 module.exports = router;

@@ -5,7 +5,9 @@ const {
     SkinReaction,
     Reaction,
     ReactionGroup,
-    OverallScore
+    OverallScore,
+    WaterLog,
+    AppUser
 } = require('../../database/models');
 
 const { Op } = require('sequelize');
@@ -496,6 +498,199 @@ class AnalyticsService {
 
             data,
         };
+    }
+
+    async getWaterAnalytics(
+        userId,
+        type,      // 'percent' или 'ml'
+        period,    // 'week' или 'month'
+        endDate
+    ) {
+        if (!type) {
+            throw new Error(
+                'type is required (percent or ml)'
+            );
+        }
+
+        if (!period) {
+            throw new Error(
+                'period is required'
+            );
+        }
+
+        if (!endDate) {
+            throw new Error(
+                'end_date is required'
+            );
+        }
+
+        if (type !== 'percent' && type !== 'ml') {
+            throw new Error(
+                'type must be "percent" or "ml"'
+            );
+        }
+
+        const end =
+            new Date(endDate);
+
+        end.setHours(
+            23,
+            59,
+            59,
+            999
+        );
+
+        const start =
+            new Date(end);
+
+        let totalDays = 7;
+
+        if (period === 'week') {
+            totalDays = 7;
+
+            start.setDate(
+                start.getDate() - 6
+            );
+        } else if (
+            period === 'month'
+        ) {
+            totalDays = 30;
+
+            start.setDate(
+                start.getDate() - 29
+            );
+        } else {
+            throw new Error(
+                'Invalid period'
+            );
+        }
+
+        start.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        const waterLogs =
+            await WaterLog.findAll({
+                where: {
+                    user_id: userId,
+
+                    date: {
+                        [Op.between]: [
+                            start
+                                .toISOString()
+                                .split('T')[0],
+                            end
+                                .toISOString()
+                                .split('T')[0],
+                        ],
+                    },
+                },
+                order: [['date', 'ASC']],
+            });
+
+        const waterMap = new Map();
+
+        for (const log of waterLogs) {
+            const dateStr = log.date;
+            waterMap.set(dateStr, {
+                achieved_amount: log.achieved_amount,
+                target_amount: log.target_amount,
+            });
+        }
+
+        const data = [];
+
+        for (
+            let i = 0;
+            i < totalDays;
+            i++
+        ) {
+            const currentDate =
+                new Date(start);
+
+            currentDate.setDate(
+                start.getDate() + i
+            );
+
+            const dateString =
+                currentDate
+                    .toISOString()
+                    .split('T')[0];
+
+            const waterData =
+                waterMap.get(dateString);
+
+            if (type === 'percent') {
+                // Проценты от нормы (может быть больше 100)
+                let percent = 0;
+
+                if (waterData) {
+                    percent = Number(
+                        ((waterData.achieved_amount /
+                            waterData.target_amount) *
+                            100).toFixed(1)
+                    );
+                }
+
+                data.push({
+                    date: dateString,
+                    value: percent,
+                });
+            } else {
+                // type === 'ml' - миллилитры
+                let achieved = 0;
+                let target = 0;
+
+                if (waterData) {
+                    achieved = waterData.achieved_amount;
+                    target = waterData.target_amount;
+                }
+
+                data.push({
+                    date: dateString,
+                    achieved_amount: achieved,
+                    target_amount: target,
+                });
+            }
+        }
+
+        const result = {
+            type,
+            period,
+
+            start_date:
+                start
+                    .toISOString()
+                    .split('T')[0],
+
+            end_date:
+                end
+                    .toISOString()
+                    .split('T')[0],
+
+            data,
+        };
+
+        if (type === 'ml') {
+            let totalTarget = 0;
+            let daysWithData = 0;
+
+            for (const item of data) {
+                if (item.target_amount > 0) {
+                    totalTarget += item.target_amount;
+                    daysWithData++;
+                }
+            }
+
+            result.average_target = daysWithData > 0
+                ? Math.round(totalTarget / daysWithData)
+                : 0;
+        }
+
+        return result;
     }
 }
 
