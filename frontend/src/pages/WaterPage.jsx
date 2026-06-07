@@ -14,6 +14,12 @@ export default function WaterPage() {
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Состояния для модального окна
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null); // 'add' или 'remove'
+  const [amountInput, setAmountInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadWaterData = async () => {
     try {
@@ -35,7 +41,6 @@ export default function WaterPage() {
       console.error('Ошибка загрузки данных воды:', error);
       setError('Не удалось загрузить данные. Возможно, cron-задача ещё не создала запись на сегодня.');
       
-      // Показываем заглушку
       setWaterData(prev => ({
         ...prev,
         achieved_amount: 0,
@@ -47,13 +52,51 @@ export default function WaterPage() {
     }
   };
 
-  const handleAddWater = async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
+  const openAddModal = () => {
+    const maxAdd = waterData.target_amount - waterData.achieved_amount;
+    setModalType('add');
+    setAmountInput('');
+    setModalOpen(true);
+  };
+
+  const openRemoveModal = () => {
+    setModalType('remove');
+    setAmountInput('');
+    setModalOpen(true);
+  };
+
+  const handleModalSubmit = async () => {
+    const amount = parseInt(amountInput, 10);
+    
+    if (isNaN(amount) || amount <= 0) {
+      setError('Введите корректное количество (больше 0)');
+      return;
+    }
+
+    if (modalType === 'add') {
+      const maxAdd = waterData.target_amount - waterData.achieved_amount;
+      if (amount > maxAdd) {
+        setError(`Нельзя добавить больше ${maxAdd} мл (дневная норма)`);
+        return;
+      }
+    } else if (modalType === 'remove') {
+      if (amount > waterData.achieved_amount) {
+        setError(`Нельзя убрать больше ${waterData.achieved_amount} мл (выпито только ${waterData.achieved_amount} мл)`);
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
     setError(null);
+    
     try {
-      const amount = 50;
-      const result = await addWater(amount);
+      let result;
+      if (modalType === 'add') {
+        result = await addWater(amount);
+      } else {
+        result = await removeWater(amount);
+      }
+      
       setWaterData(prev => {
         const newAchieved = result.achieved_amount;
         const newPercentage = Math.min(100, Math.round((newAchieved / prev.target_amount) * 100));
@@ -65,37 +108,14 @@ export default function WaterPage() {
           remaining: newRemaining
         };
       });
+      
+      setModalOpen(false);
+      setAmountInput('');
     } catch (error) {
-      console.error('Ошибка добавления воды:', error);
-      setError(error?.response?.data?.message || 'Ошибка добавления воды');
+      console.error(`Ошибка ${modalType === 'add' ? 'добавления' : 'удаления'} воды:`, error);
+      setError(error?.response?.data?.message || `Ошибка ${modalType === 'add' ? 'добавления' : 'удаления'} воды`);
     } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleRemoveWater = async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    setError(null);
-    try {
-      const amount = 50;
-      const result = await removeWater(amount);
-      setWaterData(prev => {
-        const newAchieved = result.achieved_amount;
-        const newPercentage = Math.round((newAchieved / prev.target_amount) * 100);
-        const newRemaining = Math.max(0, prev.target_amount - newAchieved);
-        return {
-          ...prev,
-          achieved_amount: newAchieved,
-          percentage: newPercentage,
-          remaining: newRemaining
-        };
-      });
-    } catch (error) {
-      console.error('Ошибка удаления воды:', error);
-      setError(error?.response?.data?.message || 'Ошибка удаления воды');
-    } finally {
-      setIsUpdating(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -106,6 +126,7 @@ export default function WaterPage() {
   const radius = 120;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (waterData.percentage / 100) * circumference;
+  const maxAdd = waterData.target_amount - waterData.achieved_amount;
 
   if (loading) {
     return (
@@ -200,14 +221,14 @@ export default function WaterPage() {
         <div className="water-buttons">
           <button 
             className="water-btn water-btn-remove"
-            onClick={handleRemoveWater}
+            onClick={openRemoveModal}
             disabled={isUpdating || waterData.achieved_amount === 0}
           >
             Убрать
           </button>
           <button 
             className="water-btn water-btn-add"
-            onClick={handleAddWater}
+            onClick={openAddModal}
             disabled={isUpdating || waterData.achieved_amount >= waterData.target_amount}
           >
             Добавить
@@ -248,6 +269,60 @@ export default function WaterPage() {
           </button>
         </nav>
       </div>
+
+      {/* Модальное окно */}
+      {modalOpen && (
+        <div className="water-modal-overlay" onClick={() => !isSubmitting && setModalOpen(false)}>
+          <div className="water-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="water-modal-title">
+              {modalType === 'add' ? 'Добавить воду' : 'Убрать воду'}
+            </h3>
+            
+            <div className="water-modal-input-group">
+              <label className="water-modal-label">
+                Количество (мл)
+              </label>
+              <input
+                type="number"
+                className="water-modal-input"
+                value={amountInput}
+                onChange={(e) => setAmountInput(e.target.value)}
+                placeholder="Введите количество"
+                autoFocus
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {modalType === 'add' && (
+              <div className="water-modal-hint">
+                Можно добавить до {maxAdd} мл
+              </div>
+            )}
+            {modalType === 'remove' && (
+              <div className="water-modal-hint">
+                Можно убрать до {waterData.achieved_amount} мл
+              </div>
+            )}
+
+            <div className="water-modal-buttons">
+              <button
+                className="water-modal-btn water-modal-btn-cancel"
+                onClick={() => setModalOpen(false)}
+                disabled={isSubmitting}
+              >
+                Отмена
+              </button>
+              <button
+                className="water-modal-btn water-modal-btn-submit"
+                onClick={handleModalSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Сохранение...' : (modalType === 'add' ? 'Добавить' : 'Убрать')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

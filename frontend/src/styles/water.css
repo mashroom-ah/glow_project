@@ -16,7 +16,7 @@
 }
 
 .water-banner {
-  background: white;
+  background: #D9D9D9;
   border-radius: 22px;
   min-height: 76px;
   display: flex;
@@ -24,6 +24,7 @@
   justify-content: center;
   padding: clamp(16px, 2vw, 22px);
   box-shadow: var(--shadow);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .water-banner-title {
@@ -31,6 +32,7 @@
   line-height: 1.15;
   font-weight: 400;
   margin: 0;
+  color: #000000;
 }
 
 .water-loading,
@@ -97,17 +99,17 @@
 
 .ml-text {
   font-size: clamp(14px, 3vw, 18px);
-  color: #666;
+  color: #000000;
 }
 
 .water-remaining {
   text-align: center;
   font-size: clamp(20px, 4vw, 26px);
   padding: 12px 20px;
-  background: white;
-  border-radius: 18px;
-  box-shadow: var(--shadow);
+  background: transparent;
+  box-shadow: none;
   margin: 0 16px;
+  color: #000000;
 }
 
 .water-buttons {
@@ -146,7 +148,7 @@
 
 .water-btn-remove {
   background: #C2CEDF;
-  color: #333;
+  color: #000000;
   border: none;
 }
 
@@ -208,5 +210,141 @@
   .water-btn {
     height: 48px;
     font-size: 18px;
+  }
+}
+
+/* ============================================ */
+/* МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА КОЛИЧЕСТВА ВОДЫ      */
+/* ============================================ */
+
+.water-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.water-modal {
+  background: white;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 340px;
+  padding: clamp(24px, 4vw, 32px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: waterModalFadeIn 0.2s ease;
+}
+
+@keyframes waterModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.water-modal-title {
+  font-size: clamp(22px, 4vw, 26px);
+  font-weight: 400;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #000000;
+}
+
+.water-modal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.water-modal-label {
+  font-size: clamp(16px, 2vw, 18px);
+  color: #000000;
+}
+
+.water-modal-input {
+  width: 100%;
+  height: clamp(48px, 5vw, 56px);
+  border-radius: 14px;
+  border: 2px solid #d9d9d9;
+  padding: 0 16px;
+  font-size: clamp(18px, 2vw, 22px);
+  font-family: 'Ledger', serif;
+  text-align: center;
+  color: #000000;
+}
+
+.water-modal-input:focus {
+  outline: none;
+  border-color: #7881BB;
+}
+
+.water-modal-hint {
+  font-size: clamp(13px, 2vw, 14px);
+  color: #7881BB;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.water-modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.water-modal-btn {
+  flex: 1;
+  height: clamp(44px, 5vw, 52px);
+  border-radius: 14px;
+  font-size: clamp(16px, 2vw, 18px);
+  font-family: 'Ledger', serif;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.water-modal-btn-cancel {
+  background: #d9d9d9;
+  border: none;
+  color: #000000;
+}
+
+.water-modal-btn-cancel:hover:not(:disabled) {
+  background: #c0c0c0;
+  transform: translateY(-1px);
+}
+
+.water-modal-btn-submit {
+  background: #7881BB;
+  border: none;
+  color: white;
+}
+
+.water-modal-btn-submit:hover:not(:disabled) {
+  background: #6770a8;
+  transform: translateY(-1px);
+}
+
+.water-modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Модальное окно на маленьких экранах */
+@media (max-width: 480px) {
+  .water-modal {
+    max-width: 300px;
+    padding: 20px;
+  }
+  
+  .water-modal-buttons {
+    gap: 10px;
   }
 }
