@@ -4,21 +4,26 @@ const {
 
 class SpfService {
     async getSPF(userId) {
-        const DailyEnvironment =
-            await DailyEnvironment.findOne({
-                where: {
-                    user_id: userId,
-                },
-            });
+        const today = new Date()
+            .toISOString()
+            .split('T')[0];
 
-        if (!DailyEnvironment) {
-            throw new Error(
-                'DailyEnvironment log not found'
-            );
+        // Переименуем переменную, чтобы не конфликтовать с моделью
+        const dailyEnvRecord = await DailyEnvironment.findOne({
+            where: {
+                user_id: userId,
+                date: today,
+            },
+        });
+
+        if (!dailyEnvRecord) {
+            // Если нет записи на сегодня, пробуем создать через waterDailyService
+            // или просто возвращаем 0
+            return { recommended_spf: 0 };
         }
 
         return {
-            recommended_spf: DailyEnvironment.recommended_spf,
+            recommended_spf: dailyEnvRecord.recommended_spf,
         };
     }
 }

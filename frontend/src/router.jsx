@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import RegisterDetailsPage from './pages/RegisterDetailsPage'
 import MainPage from './pages/MainPage'
 import ProfilePage from './pages/ProfilePage'
+import WaterPage from './pages/WaterPage';
 
 export const router = createBrowserRouter([
   {
@@ -45,7 +46,7 @@ export const router = createBrowserRouter([
 
   {
     path: '/water',
-    element: <div>Water</div>,
+    element: <WaterPage />,
   },
 
   {

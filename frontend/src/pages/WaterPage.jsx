@@ -13,10 +13,12 @@ export default function WaterPage() {
   });
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadWaterData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getTodayWater();
       const achieved = data.achieved_amount || 0;
       const target = data.target_amount || 2000;
@@ -31,7 +33,9 @@ export default function WaterPage() {
       });
     } catch (error) {
       console.error('Ошибка загрузки данных воды:', error);
-      // Если данные не найдены, показываем нулевые значения
+      setError('Не удалось загрузить данные. Возможно, cron-задача ещё не создала запись на сегодня.');
+      
+      // Показываем заглушку
       setWaterData(prev => ({
         ...prev,
         achieved_amount: 0,
@@ -46,6 +50,7 @@ export default function WaterPage() {
   const handleAddWater = async () => {
     if (isUpdating) return;
     setIsUpdating(true);
+    setError(null);
     try {
       const amount = 50;
       const result = await addWater(amount);
@@ -62,7 +67,7 @@ export default function WaterPage() {
       });
     } catch (error) {
       console.error('Ошибка добавления воды:', error);
-      alert(error?.response?.data?.message || 'Ошибка добавления воды');
+      setError(error?.response?.data?.message || 'Ошибка добавления воды');
     } finally {
       setIsUpdating(false);
     }
@@ -71,6 +76,7 @@ export default function WaterPage() {
   const handleRemoveWater = async () => {
     if (isUpdating) return;
     setIsUpdating(true);
+    setError(null);
     try {
       const amount = 50;
       const result = await removeWater(amount);
@@ -87,7 +93,7 @@ export default function WaterPage() {
       });
     } catch (error) {
       console.error('Ошибка удаления воды:', error);
-      alert(error?.response?.data?.message || 'Ошибка удаления воды');
+      setError(error?.response?.data?.message || 'Ошибка удаления воды');
     } finally {
       setIsUpdating(false);
     }
@@ -101,12 +107,50 @@ export default function WaterPage() {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (waterData.percentage / 100) * circumference;
 
+  if (loading) {
+    return (
+      <div className="water-page">
+        <div className="water-container">
+          <div className="water-banner">
+            <h2 className="water-banner-title">Вода сегодня</h2>
+          </div>
+          <div className="water-loading">
+            Загрузка...
+          </div>
+          <nav className="bottom-nav">
+            <button className="nav-item" onClick={() => navigate('/constructor')}>
+              <img src="/icons/constructor.svg" alt="constructor" />
+            </button>
+            <button className="nav-item active-nav">
+              <img src="/icons/water.svg" alt="water" />
+            </button>
+            <button className="nav-item" onClick={() => navigate('/main')}>
+              <img src="/icons/home.svg" alt="home" />
+            </button>
+            <button className="nav-item" onClick={() => navigate('/analytics')}>
+              <img src="/icons/chart.svg" alt="chart" />
+            </button>
+            <button className="nav-item" onClick={() => navigate('/profile')}>
+              <img src="/icons/profile.svg" alt="profile" />
+            </button>
+          </nav>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="water-page">
       <div className="water-container">
         <div className="water-banner">
           <h2 className="water-banner-title">Вода сегодня</h2>
         </div>
+
+        {error && (
+          <div className="water-error">
+            {error}
+          </div>
+        )}
 
         <div className="water-chart-container">
           <div className="progress-ring-container">

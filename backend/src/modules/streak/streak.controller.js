@@ -6,7 +6,7 @@ class streakController {
     try {
       const result =
         await streakService.getUserStreak(
-          req.user.id
+          req.user_id
         );
 
       return res.json(result);

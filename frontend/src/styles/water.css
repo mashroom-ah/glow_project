@@ -1,0 +1,212 @@
+.water-page {
+  min-height: 100vh;
+  background: #F0E5D4;
+  display: flex;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 28px);
+}
+
+.water-container {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 36px);
+  padding-bottom: 110px;
+}
+
+.water-banner {
+  background: white;
+  border-radius: 22px;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 22px);
+  box-shadow: var(--shadow);
+}
+
+.water-banner-title {
+  font-size: clamp(22px, 4vw, 28px);
+  line-height: 1.15;
+  font-weight: 400;
+  margin: 0;
+}
+
+.water-loading,
+.water-error {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 22px;
+  font-size: clamp(16px, 3vw, 20px);
+  box-shadow: var(--shadow);
+}
+
+.water-error {
+  color: #ea4d4d;
+  background: #fff5f5;
+}
+
+.water-chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.progress-ring-container {
+  position: relative;
+  width: clamp(240px, 60vw, 280px);
+  height: clamp(240px, 60vw, 280px);
+}
+
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  stroke: #C2CEDF;
+}
+
+.progress-ring-fill {
+  stroke: #7881BB;
+  transition: stroke-dashoffset 0.35s ease;
+}
+
+.progress-ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.percentage-text {
+  font-size: clamp(42px, 8vw, 56px);
+  font-weight: 600;
+  line-height: 1;
+  color: #7881BB;
+}
+
+.ml-text {
+  font-size: clamp(14px, 3vw, 18px);
+  color: #666;
+}
+
+.water-remaining {
+  text-align: center;
+  font-size: clamp(20px, 4vw, 26px);
+  padding: 12px 20px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  margin: 0 16px;
+}
+
+.water-buttons {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.water-btn {
+  flex: 1;
+  height: clamp(52px, 6vw, 64px);
+  border-radius: 14px;
+  font-size: clamp(18px, 3vw, 22px);
+  font-family: 'Ledger', serif;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.water-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.water-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.water-btn-add {
+  background: #7881BB;
+  color: white;
+  border: none;
+}
+
+.water-btn-add:hover:not(:disabled) {
+  background: #6770a8;
+}
+
+.water-btn-remove {
+  background: #C2CEDF;
+  color: #333;
+  border: none;
+}
+
+.water-btn-remove:hover:not(:disabled) {
+  background: #b0bed3;
+}
+
+.water-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Адаптация под планшеты */
+@media (min-width: 700px) {
+  .water-container {
+    max-width: 600px;
+  }
+  
+  .progress-ring-container {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+@media (min-width: 900px) {
+  .water-container {
+    max-width: 700px;
+  }
+  
+  .progress-ring-container {
+    width: 340px;
+    height: 340px;
+  }
+  
+  .water-buttons {
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .water-remaining {
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 420px) {
+  .water-container {
+    gap: 20px;
+  }
+  
+  .water-buttons {
+    gap: 12px;
+  }
+  
+  .water-btn {
+    height: 48px;
+    font-size: 18px;
+  }
+}
