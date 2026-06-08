@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { RoutineLog, RoutineStepLog } = require('../../database/models');
 
 class StreakService {

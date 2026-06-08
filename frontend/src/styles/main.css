@@ -21,6 +21,16 @@
   gap: clamp(18px, 2vw, 26px);
 }
 
+/* Баннеры — узкие */
+.streak-banner,
+.spf-banner {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90%;
+  width: fit-content;
+  min-width: 260px;
+}
+
 .streak-banner {
   background: white;
 
@@ -61,6 +71,52 @@
 }
 
 .streak-banner p {
+  font-size:
+    clamp(20px, 4vw, 24px);
+
+  line-height: 1.15;
+}
+
+.spf-banner {
+  background: white;
+
+  border-radius: 22px;
+
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+
+  gap: clamp(12px, 2vw, 18px);
+
+  padding:
+    clamp(16px, 2vw, 22px);
+
+  box-shadow: var(--shadow);
+}
+
+.spf-icon {
+  width:
+    clamp(52px, 8vw, 74px);
+
+  height:
+    clamp(52px, 8vw, 74px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-shrink: 0;
+}
+
+.spf-icon img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.spf-banner p {
   font-size:
     clamp(20px, 4vw, 24px);
 
@@ -576,53 +632,7 @@
     clamp(18px, 2vw, 22px);
 }
 
-.spf-banner {
-  background: white;
-
-  border-radius: 22px;
-
-  min-height: 76px;
-
-  display: flex;
-  align-items: center;
-
-  gap:
-    clamp(12px, 2vw, 18px);
-
-  padding:
-    clamp(16px, 2vw, 22px);
-
-  box-shadow: var(--shadow);
-}
-
-.spf-icon {
-  width:
-    clamp(52px, 8vw, 74px);
-
-  height:
-    clamp(52px, 8vw, 74px);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  flex-shrink: 0;
-}
-
-.spf-icon img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: contain;
-}
-
-.spf-banner p {
-  font-size:
-    clamp(20px, 4vw, 24px);
-
-  line-height: 1.15;
-}
-
+/* Адаптация для мобильных */
 @media (max-width: 540px) {
   .main-container {
     max-width: 100%;
@@ -643,8 +653,15 @@
   .reaction-score {
     padding-left: 0;
   }
+
+  .streak-banner,
+  .spf-banner {
+    max-width: 96%;
+    width: 100%;
+  }
 }
 
+/* Адаптация для планшетов и десктопа */
 @media (min-width: 900px) {
   .main-container {
     max-width: 1180px;
@@ -676,6 +693,10 @@
   }
 
   .streak-banner {
+    min-height: 96px;
+  }
+
+  .spf-banner {
     min-height: 96px;
   }
 }

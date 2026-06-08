@@ -1,14 +1,9 @@
-const streakService =
-  require('./streak.service');
+const streakService = require('./streak.service');
 
 class streakController {
   async getStreak(req, res) {
     try {
-      const result =
-        await streakService.getUserStreak(
-          req.user_id
-        );
-
+      const result = await streakService.getUserStreak(req.user.user_id);
       return res.json(result);
     } catch (error) {
       return res.status(500).json({
@@ -18,5 +13,4 @@ class streakController {
   }
 }
 
-module.exports =
-  new streakController();
+module.exports = new streakController();
