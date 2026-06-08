@@ -8,6 +8,7 @@ import MainPage from './pages/MainPage'
 import ProfilePage from './pages/ProfilePage'
 import WaterPage from './pages/WaterPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import ConstructorPage from './pages/ConstructorPage';
 
 export const router = createBrowserRouter([
   {
@@ -42,7 +43,7 @@ export const router = createBrowserRouter([
 
   {
     path: '/constructor',
-    element: <div>Constructor</div>,
+    element: <ConstructorPage />,
   },
 
   {
