@@ -20,18 +20,6 @@ const productNameRu = {
   'Basic Cleanser': 'Базовый очищающий гель'
 }
 
-// Переводы активных компонентов
-const componentNameRu = {
-  niacinamide: 'Ниацинамид',
-  retinol: 'Ретинол',
-  aha: 'AHA-кислоты',
-  bha: 'BHA-кислоты',
-  hyaluronic_acid: 'Гиалуроновая кислота',
-  centella_asiatica: 'Центелла азиатская',
-  azelaic_acid: 'Азелаиновая кислота',
-  panthenol: 'Пантенол'
-}
-
 const routineTypeRu = {
   morning: 'Утро',
   evening: 'Вечер',
@@ -191,7 +179,6 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
   }
 
   const translateProductName = (engName) => productNameRu[engName] || engName
-  const translateComponent = (engName) => (engName ? componentNameRu[engName] || engName : null)
 
   const stepColors = ['#FCE68F', '#F3BCBE', '#CDBCDB', '#D6DC82', '#FFAB86', '#C2CEDF', '#7881BB']
 
@@ -204,7 +191,6 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
       <div className="routine-steps-list">
         {steps.map((step, idx) => {
           const translatedProduct = translateProductName(step.product.product_name)
-          const translatedComponent = translateComponent(step.product.component_name)
           const bgColor = stepColors[idx % stepColors.length]
 
           return (
@@ -213,9 +199,6 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
               <div className="step-row">
                 <div className="step-product-card" style={{ backgroundColor: bgColor }}>
                   <div className="step-product-name">{translatedProduct}</div>
-                  {translatedComponent && (
-                    <div className="step-component">Активный компонент: {translatedComponent}</div>
-                  )}
                 </div>
                 <div className="step-frequency-info">
                   <div className="frequency-label">Частота:</div>

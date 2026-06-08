@@ -3,30 +3,27 @@
   background: #F0E5D4;
   display: flex;
   justify-content: center;
-  padding: clamp(16px, 2vw, 28px);
+  padding: clamp(16px, 2vw, 28px) 0 110px;
 }
 
 .constructor-container {
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: clamp(24px, 3vw, 36px);
-  padding-bottom: 110px;
+  gap: clamp(32px, 4vw, 48px);
+  padding: 0 clamp(14px, 3vw, 24px);
 }
 
 .constructor-title {
-  font-size: clamp(28px, 5vw, 36px);
-  font-weight: 400;
-  margin: 0;
-  text-align: center;
-  color: #000000;
+  display: none;
 }
 
 .loading,
 .error-message {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   background: white;
   border-radius: 22px;
   font-size: clamp(16px, 3vw, 20px);
@@ -38,38 +35,38 @@
   background: #fff5f5;
 }
 
-/* Секция рутины — без белого фона, только для группировки */
 .routine-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-/* Белый фон ТОЛЬКО для заголовка */
+/* Белый фон для заголовка – уменьшенная высота */
 .routine-header {
   background: white;
   border-radius: 28px;
-  padding: clamp(16px, 2vw, 20px);
-  box-shadow: var(--shadow);
+  padding: clamp(8px, 1.5vw, 14px);
   text-align: center;
+  box-shadow: var(--shadow);
 }
 
 .routine-header h2 {
-  font-size: clamp(24px, 4vw, 28px);
-  font-weight: 400;
   margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 400;
   color: #000000;
 }
 
-/* Кнопка добавления (если рутины нет) */
 .add-routine-btn {
   background: #F3BCBE;
   color: #000000;
   border: none;
-  width: 100%;
-  padding: 14px;
+  width: fit-content;
+  min-width: 160px;
+  align-self: center;
+  padding: 12px 24px;
   border-radius: 14px;
-  font-size: clamp(16px, 2vw, 18px);
+  font-size: clamp(16px, 3vw, 20px);
   font-family: 'Ledger', serif;
   cursor: pointer;
   transition: var(--transition);
@@ -83,17 +80,15 @@
 
 .empty-routine {
   text-align: center;
-  padding: 30px 20px;
-  color: #000000;
+  padding: 24px;
+  color: #666;
   font-size: clamp(14px, 2vw, 16px);
-  background: transparent;
 }
 
-/* Шаги – без белого фона */
 .routine-steps-list {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .step-item {
@@ -103,28 +98,30 @@
 }
 
 .step-number {
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: clamp(18px, 4vw, 24px);
   color: #000000;
-  padding-left: 4px;
+  padding-left: 8px;
 }
 
 .step-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: stretch;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .step-product-card {
   flex: 2;
-  min-width: 180px;
+  min-width: 0;
   border-radius: 20px;
-  padding: 14px 18px;
+  padding: 20px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  text-align: center;
   transition: transform 0.2s ease;
+  word-break: break-word;
 }
 
 .step-product-card:hover {
@@ -132,20 +129,15 @@
 }
 
 .step-product-name {
-  font-size: clamp(16px, 3vw, 20px);
+  font-size: clamp(14px, 3vw, 18px);
   font-weight: 500;
   color: #000000;
-}
-
-.step-component {
-  font-size: clamp(12px, 2vw, 14px);
-  color: #000000;
+  line-height: 1.3;
 }
 
 .step-frequency-info {
   flex: 1;
-  min-width: 110px;
-  background: transparent;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -153,13 +145,13 @@
 }
 
 .frequency-label {
-  font-size: clamp(12px, 2vw, 14px);
+  font-size: clamp(13px, 2.5vw, 16px);
   color: #000000;
   margin-bottom: 4px;
 }
 
 .frequency-value {
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: clamp(14px, 3vw, 18px);
   font-weight: 500;
   color: #000000;
 }
@@ -175,7 +167,7 @@
   flex: 1;
   padding: 12px;
   border-radius: 14px;
-  font-size: clamp(16px, 2vw, 18px);
+  font-size: clamp(16px, 3vw, 20px);
   font-family: 'Ledger', serif;
   cursor: pointer;
   transition: var(--transition);
@@ -201,13 +193,14 @@
   transform: translateY(-2px);
 }
 
+/* НИЖНЯЯ НАВИГАЦИЯ */
 .bottom-nav {
   position: fixed;
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 430px;
+  max-width: 480px;
   background: #F0E5D4;
   height: clamp(74px, 9vw, 92px);
   display: flex;
@@ -225,7 +218,7 @@
   align-items: center;
   border-radius: 14px;
   background: transparent;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .nav-item img {
@@ -242,8 +235,12 @@
   background: rgba(155, 164, 222, 0.12);
 }
 
+/* Адаптация */
 @media (min-width: 700px) {
   .constructor-container {
+    max-width: 700px;
+  }
+  .bottom-nav {
     max-width: 700px;
   }
 }
@@ -251,32 +248,47 @@
 @media (min-width: 900px) {
   .constructor-container {
     max-width: 1000px;
+    padding: 0 32px;
+  }
+  .routine-header {
+    padding: 16px;
+  }
+  .routine-header h2 {
+    font-size: 36px;
+  }
+  .step-product-card {
+    padding: 30px;
+  }
+  .step-product-name {
+    font-size: 20px;
+  }
+  .frequency-label,
+  .frequency-value {
+    font-size: 18px;
   }
   .bottom-nav {
-    max-width: 1180px;
-    width: calc(100% - 48px);
+    max-width: 1000px;
+    width: calc(100% - 64px);
     border-radius: 24px 24px 0 0;
     padding: 0 28px;
   }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 480px) {
   .step-row {
-    flex-direction: column;
+    gap: 12px;
   }
   .step-product-card {
-    width: 100%;
+    padding: 15px 8px;
   }
-  .step-frequency-info {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 8px 0;
+  .step-product-name {
+    font-size: 12px;
   }
-  .frequency-label {
-    margin-bottom: 0;
+  .frequency-label,
+  .frequency-value {
+    font-size: 12px;
   }
   .routine-actions {
-    flex-direction: column;
+    flex-direction: row;
   }
 }
