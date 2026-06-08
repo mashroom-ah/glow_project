@@ -59,3 +59,49 @@ export const getSkinReactions = async () => {
     return { reactions: cached ? JSON.parse(cached) : [] }
   }
 }
+
+// Получить все группы продуктов
+export const getProductGroups = async () => {
+  const { data } = await api.get('/product-groups')
+  return data
+}
+
+// Получить продукты по группе (или все, если group_id не указан)
+export const getProductsByGroup = async (groupId) => {
+  const params = groupId ? { group_id: groupId } : {}
+  const { data } = await api.get('/products', { params })
+  return data
+}
+
+// Проверить валидность рутины (шагов)
+export const validateRoutine = async (steps) => {
+  const { data } = await api.post('/routines/validate', { steps })
+  return data
+}
+
+// Обновлённый createRoutine / updateRoutine (принимают объект с steps)
+export const createRoutine = async (routineType, steps) => {
+  const { data } = await api.post('/routines', {
+    routine_type: routineType,
+    steps: steps.map((step, idx) => ({
+      product_id: step.product_id,
+      step_order: idx + 1,
+      frequency_type: step.frequency_type,
+      frequency_value: step.frequency_value || 0
+    }))
+  })
+  return data
+}
+
+export const updateRoutine = async (routineId, routineType, steps) => {
+  const { data } = await api.put(`/routines/${routineId}`, {
+    routine_type: routineType,
+    steps: steps.map((step, idx) => ({
+      product_id: step.product_id,
+      step_order: idx + 1,
+      frequency_type: step.frequency_type,
+      frequency_value: step.frequency_value || 0
+    }))
+  })
+  return data
+}

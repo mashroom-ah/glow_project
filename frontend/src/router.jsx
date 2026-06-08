@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage'
 import WaterPage from './pages/WaterPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ConstructorPage from './pages/ConstructorPage';
+import ConstructorEditPage from './pages/ConstructorEditPage'
 
 export const router = createBrowserRouter([
   {
@@ -54,5 +55,13 @@ export const router = createBrowserRouter([
   {
     path: '/analytics',
     element: <AnalyticsPage />,
+  },
+  {
+    path: '/constructor/create',
+    element: <ConstructorEditPage />
+  },
+  {
+    path: '/constructor/edit/:id',
+    element: <ConstructorEditPage />
   },
 ])
