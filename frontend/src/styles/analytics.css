@@ -78,29 +78,68 @@
   background: #c0c0c0;
 }
 
+/* Кастомный DatePicker (react-datepicker) */
 .date-picker-wrapper {
   position: relative;
 }
 
-.date-btn {
+.custom-datepicker {
   padding: 8px 20px;
   border-radius: 12px;
   background: #d9d9d9;
   font-size: clamp(14px, 2vw, 16px);
   font-family: 'Ledger', serif;
   cursor: pointer;
+  border: none;
+  text-align: center;
+  width: auto;
 }
 
-.date-input-popup {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 12px;
+.custom-datepicker:focus {
+  outline: none;
+  background: #c0c0c0;
+}
+
+/* Стили календаря – переопределяем синий цвет */
+.react-datepicker {
+  font-family: 'Ledger', serif;
+  background-color: white;
   border: 1px solid #d9d9d9;
-  background: white;
-  z-index: 10;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.react-datepicker__header {
+  background-color: #F0E5D4;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #000000;
+}
+
+.react-datepicker__day {
+  color: #000000;
+}
+
+.react-datepicker__day:hover {
+  background-color: #FCE68F;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #7881BB !important;
+  color: white;
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--keyboard-selected:hover {
+  background-color: #6770a8 !important;
+}
+
+.react-datepicker__triangle {
+  display: none;
 }
 
 /* Карточки графиков */
@@ -158,7 +197,7 @@
   font-size: clamp(16px, 3vw, 18px);
 }
 
-/* Tooltip */
+/* Tooltip графиков */
 .analytics-tooltip {
   background: white;
   border-radius: 12px;
@@ -178,15 +217,7 @@
   font-size: clamp(12px, 2vw, 14px);
 }
 
-.hidden-date-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
-  height: 0;
-}
-
-/* Адаптация */
+/* Адаптация под планшеты */
 @media (min-width: 700px) {
   .analytics-container {
     max-width: 700px;
@@ -233,4 +264,13 @@
     flex: 1;
     text-align: center;
   }
+}
+
+/* Вспомогательный класс для скрытого инпута (если используется showPicker) */
+.hidden-date-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
 }

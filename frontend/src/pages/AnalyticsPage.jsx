@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import { registerLocale } from 'react-datepicker';
+import ru from 'date-fns/locale/ru';
+import 'react-datepicker/dist/react-datepicker.css';
 import {
   LineChart,
   Line,
@@ -21,6 +25,9 @@ import {
 } from '../api/analyticsApi';
 import { formatDateApi } from '../utils/date';
 import '../styles/analytics.css';
+
+// Регистрируем русскую локаль для DatePicker
+registerLocale('ru', ru);
 
 const COLORS = {
   primary: '#7881BB',
@@ -57,7 +64,6 @@ const reactionGroupRu = {
 
 export default function AnalyticsPage() {
   const navigate = useNavigate();
-  const dateInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,7 +82,6 @@ export default function AnalyticsPage() {
   const loadAllData = async () => {
     setLoading(true);
     setError(null);
-
     const formattedEndDate = formatDateApi(endDate);
 
     try {
@@ -112,21 +117,6 @@ export default function AnalyticsPage() {
   const formatDisplayDate = (date) => {
     const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     return `${date.getDate()} ${months[date.getMonth()]}`;
-  };
-
-  const openCalendar = () => {
-    if (dateInputRef.current?.showPicker) {
-      dateInputRef.current.showPicker();
-    }
-  };
-
-  const handleDateChange = (e) => {
-    const rawDate = e.target.value;
-    if (!rawDate) return;
-    const parsedDate = new Date(rawDate);
-    if (!isNaN(parsedDate.getTime())) {
-      setEndDate(parsedDate);
-    }
   };
 
   const CustomTooltip = ({ active, payload, label, unit = '' }) => {
@@ -191,15 +181,14 @@ export default function AnalyticsPage() {
           <div className="control-group">
             <label>Дата окончания</label>
             <div className="date-picker-wrapper">
-              <button className="date-btn" onClick={openCalendar}>
-                {formatDisplayDate(endDate)}
-              </button>
-              <input
-                ref={dateInputRef}
-                type="date"
-                className="hidden-date-input"
-                value={formatDateApi(endDate)}
-                onChange={handleDateChange}
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                dateFormat="dd MMM"
+                className="custom-datepicker"
+                wrapperClassName="custom-datepicker-wrapper"
+                popperClassName="custom-datepicker-popper"
+                locale="ru"
               />
             </div>
           </div>
@@ -301,7 +290,7 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        {/* Реакции кожи - столбчатая диаграмма */}
+        {/* Реакции кожи */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>Реакции кожи</h3>
