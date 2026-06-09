@@ -6,36 +6,34 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token =
-      localStorage.getItem(
-        'access_token'
-      )
-
+    const token = localStorage.getItem('access_token')
     if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}`
     }
-
     return config
   },
-
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 api.interceptors.response.use(
   (response) => response,
-
-  (error) => {
-    if (
-      error.response?.status === 401
-    ) {
-      console.log(
-        'Unauthorized request'
-      )
+  async (error) => {
+    const originalRequest = error.config
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      try {
+        const refresh_token = localStorage.getItem('refresh_token')
+        if (!refresh_token) throw new Error('No refresh token')
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, { refresh_token })
+        localStorage.setItem('access_token', data.access_token)
+        originalRequest.headers.Authorization = `Bearer ${data.access_token}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        localStorage.clear()
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
     }
-
     return Promise.reject(error)
   }
 )

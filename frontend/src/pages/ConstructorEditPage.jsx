@@ -1,9 +1,25 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useDrag, useDrop, DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { getProductGroups, getProductsByGroup, createRoutine, updateRoutine, validateRoutine } from '../api/routineApi'
+import { getProductGroups, getProductsByGroup, getRoutines, createRoutine, updateRoutine, validateRoutine } from '../api/routineApi'
 import '../styles/constructor-edit.css'
+
+const productNameRu = {
+  'Foam Cleanser': 'Пенка для умывания',
+  'Gel Cleanser': 'Гель для умывания',
+  'Moisturizing Cream': 'Увлажняющий крем',
+  'Hydrating Toner': 'Увлажняющий тонер',
+  'Barrier Serum': 'Восстанавливающая сыворотка',
+  'Acid Toner': 'Кислотный тонер',
+  'BHA Pads': 'BHA-пэды',
+  'Retinol Serum': 'Сыворотка с ретинолом',
+  'Azelaic Acid Serum': 'Сыворотка с азелаиновой кислотой',
+  'Calming Mask': 'Успокаивающая маска',
+  'Recovery Cream': 'Восстанавливающий крем',
+  'Basic SPF Cream': 'Базовый SPF-крем',
+  'Basic Cleanser': 'Базовый очищающий гель'
+}
 
 const groupNameRu = {
   cleansing: 'Очищение',
@@ -26,35 +42,30 @@ const frequencyOptions = [
 ]
 
 const productColors = ['#FCE68F', '#F3BCBE', '#CDBCDB', '#D6DC82', '#FFAB86', '#C2CEDF', '#7881BB']
-
 const ItemTypes = { PRODUCT: 'product' }
 
-// Перетаскиваемый продукт
 const DraggableProduct = ({ product, color }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.PRODUCT,
     item: { product },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging()
-    })
+    collect: (monitor) => ({ isDragging: !!monitor.isDragging() })
   }))
+  const productNameRuText = productNameRu[product.product_name] || product.product_name
   return (
     <div ref={drag} className="product-card" style={{ backgroundColor: color, opacity: isDragging ? 0.5 : 1 }}>
-      <div className="product-name">{product.product_name}</div>
+      <div className="product-name">{productNameRuText}</div>
     </div>
   )
 }
 
-// Компонент шага с drop-зоной
-const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency }) => {
+const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency, bgColor }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.PRODUCT,
     drop: (item) => onDrop(item.product, index),
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver()
-    })
+    collect: (monitor) => ({ isOver: !!monitor.isOver() })
   }))
-
+  const productNameRuText = productNameRu[step.product_name] || step.product_name
+  const groupNameRuText = groupNameRu[step.product_group] || step.product_group
   return (
     <div ref={drop} className={`step-item ${isOver ? 'drop-over' : ''}`}>
       <div className="step-header">
@@ -66,9 +77,9 @@ const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveD
         </div>
       </div>
       <div className="step-content">
-        <div className="step-product-info">
-          <div className="step-product-name">{step.product_name}</div>
-          <div className="step-product-group">{groupNameRu[step.product_group] || step.product_group}</div>
+        <div className="step-product-card" style={{ backgroundColor: bgColor }}>
+          <div className="step-product-name">{productNameRuText}</div>
+          <div className="step-product-group">{groupNameRuText}</div>
         </div>
         <div className="step-frequency">
           <select value={step.frequency_type} onChange={(e) => onUpdateFrequency(index, 'frequency_type', e.target.value)}>
@@ -83,14 +94,11 @@ const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveD
   )
 }
 
-// Зона для добавления нового шага (плюсик с drop)
 const AddStepZone = ({ onDrop }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.PRODUCT,
     drop: (item) => onDrop(item.product),
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver()
-    })
+    collect: (monitor) => ({ isOver: !!monitor.isOver() })
   }))
   return (
     <div ref={drop} className={`add-step-zone ${isOver ? 'drop-over' : ''}`}>
@@ -102,15 +110,17 @@ const AddStepZone = ({ onDrop }) => {
 export default function ConstructorEditPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
+  const { id } = useParams()
   const existingRoutine = state?.routine || null
-  const isEdit = !!existingRoutine
-  const initialType = state?.routineType || (existingRoutine?.routine_type) || 'morning'
+  const isEdit = !!existingRoutine || !!id
+  const initialType = state?.routineType || existingRoutine?.routine_type || 'morning'
 
   const [routineType, setRoutineType] = useState(initialType)
   const [groups, setGroups] = useState([])
   const [selectedGroupId, setSelectedGroupId] = useState(null)
   const [products, setProducts] = useState([])
   const [steps, setSteps] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getProductGroups().then(setGroups).catch(console.error)
@@ -124,8 +134,8 @@ export default function ConstructorEditPage() {
     }
   }, [selectedGroupId])
 
-  useEffect(() => {
-    if (existingRoutine && existingRoutine.steps) {
+  const loadRoutine = async () => {
+    if (existingRoutine) {
       const loadedSteps = existingRoutine.steps.map((step, idx) => ({
         id: step.routine_step_id,
         product_id: step.product.product_id,
@@ -138,10 +148,43 @@ export default function ConstructorEditPage() {
         component_name: step.product.component_name || null
       }))
       setSteps(loadedSteps)
+      setLoading(false)
+    } else if (id && !existingRoutine) {
+      try {
+        const routines = await getRoutines()
+        const found = routines.find(r => r.routine_id === id)
+        if (found) {
+          setRoutineType(found.routine_type)
+          const loadedSteps = found.steps.map((step, idx) => ({
+            id: step.routine_step_id,
+            product_id: step.product.product_id,
+            product_name: step.product.product_name,
+            product_group: step.product.group_name,
+            step_order: idx + 1,
+            frequency_type: step.frequency_type,
+            frequency_value: step.frequency_value,
+            component_id: step.product.component_id || null,
+            component_name: step.product.component_name || null
+          }))
+          setSteps(loadedSteps)
+        } else {
+          console.error('Рутина не найдена')
+          navigate('/constructor')
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      setLoading(false)
     }
-  }, [existingRoutine])
+  }
 
-  // Обработка drop на существующий шаг
+  useEffect(() => {
+    loadRoutine()
+  }, [id, existingRoutine])
+
   const handleDropOnStep = (product, targetIndex) => {
     setSteps(prevSteps => {
       const newSteps = [...prevSteps]
@@ -155,7 +198,6 @@ export default function ConstructorEditPage() {
           component_name: product.component_name || null
         }
       } else {
-        // Создание нового шага (если targetIndex равен длине)
         const newStep = {
           id: Date.now(),
           product_id: product.product_id,
@@ -174,7 +216,6 @@ export default function ConstructorEditPage() {
     })
   }
 
-  // Добавление продукта в конец (перетаскивание на плюсик)
   const addProductToSteps = (product) => {
     setSteps(prev => {
       const newStep = {
@@ -255,7 +296,7 @@ export default function ConstructorEditPage() {
     }))
     try {
       if (isEdit) {
-        await updateRoutine(existingRoutine.routine_id, routineType, payload)
+        await updateRoutine(id || existingRoutine.routine_id, routineType, payload)
       } else {
         await createRoutine(routineType, payload)
       }
@@ -266,6 +307,10 @@ export default function ConstructorEditPage() {
   }
 
   const handleCancel = () => navigate('/constructor')
+
+  if (loading) {
+    return <div className="constructor-edit-page"><div className="constructor-edit-container">Загрузка...</div></div>
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -315,6 +360,7 @@ export default function ConstructorEditPage() {
                 onMoveUp={moveStep}
                 onMoveDown={moveStep}
                 onUpdateFrequency={updateFrequency}
+                bgColor={productColors[idx % productColors.length]}
               />
             ))}
           </div>

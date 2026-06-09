@@ -20,16 +20,6 @@ export const getRoutinesByDate = async (date) => {
   return data
 }
 
-export const createRoutine = async (body) => {
-  const { data } = await api.post('/routines', body)
-  return data
-}
-
-export const updateRoutine = async (id, body) => {
-  const { data } = await api.put(`/routines/${id}`, body)
-  return data
-}
-
 export const deleteRoutine = async (id) => {
   const { data } = await api.delete(`/routines/${id}`)
   return data
@@ -60,26 +50,25 @@ export const getSkinReactions = async () => {
   }
 }
 
-// Получить все группы продуктов
+// Группы и продукты
 export const getProductGroups = async () => {
   const { data } = await api.get('/product-groups')
   return data
 }
 
-// Получить продукты по группе (или все, если group_id не указан)
 export const getProductsByGroup = async (groupId) => {
   const params = groupId ? { group_id: groupId } : {}
   const { data } = await api.get('/products', { params })
   return data
 }
 
-// Проверить валидность рутины (шагов)
+// Валидация рутины
 export const validateRoutine = async (steps) => {
   const { data } = await api.post('/routines/validate', { steps })
   return data
 }
 
-// Обновлённый createRoutine / updateRoutine (принимают объект с steps)
+// Создание рутины
 export const createRoutine = async (routineType, steps) => {
   const { data } = await api.post('/routines', {
     routine_type: routineType,
@@ -93,6 +82,7 @@ export const createRoutine = async (routineType, steps) => {
   return data
 }
 
+// Обновление рутины
 export const updateRoutine = async (routineId, routineType, steps) => {
   const { data } = await api.put(`/routines/${routineId}`, {
     routine_type: routineType,

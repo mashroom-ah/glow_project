@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { getRoutines, deleteRoutine } from '../api/routineApi'
 import '../styles/constructor.css'
 
-// Переводы названий продуктов
 const productNameRu = {
   'Foam Cleanser': 'Пенка для умывания',
   'Gel Cleanser': 'Гель для умывания',
@@ -35,11 +34,40 @@ const frequencyRu = {
   every_n_days: (value) => `каждые ${value} ${value === 1 ? 'день' : 'дней'}`
 }
 
+// Шаблоны для выбора при создании
+const templates = {
+  morning: {
+    name: 'Базовое утро',
+    steps: [
+      { product_name: 'Foam Cleanser', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Moisturizing Cream', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Basic SPF Cream', frequency_type: 'daily', frequency_value: 0 }
+    ]
+  },
+  evening: {
+    name: 'Базовый вечер',
+    steps: [
+      { product_name: 'Gel Cleanser', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Retinol Serum', frequency_type: 'weekly', frequency_value: 1 },
+      { product_name: 'Calming Mask', frequency_type: 'weekly', frequency_value: 4 }
+    ]
+  },
+  universal: {
+    name: 'Универсальная',
+    steps: [
+      { product_name: 'Moisturizing Cream', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Basic SPF Cream', frequency_type: 'daily', frequency_value: 0 }
+    ]
+  }
+}
+
 export default function ConstructorPage() {
   const navigate = useNavigate()
   const [routines, setRoutines] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [selectedType, setSelectedType] = useState(null)
 
   const loadRoutines = async () => {
     try {
@@ -73,8 +101,29 @@ export default function ConstructorPage() {
     navigate(`/constructor/edit/${routine.routine_id}`, { state: { routine } })
   }
 
-  const handleCreate = (type) => {
-    navigate(`/constructor/create`, { state: { routineType: type } })
+  const handleCreateClick = (type) => {
+    setSelectedType(type)
+    setShowTemplateModal(true)
+  }
+
+  const selectTemplate = () => {
+    setShowTemplateModal(false)
+    navigate('/constructor/create', {
+      state: {
+        routineType: selectedType,
+        template: templates[selectedType]
+      }
+    })
+  }
+
+  const selectEmpty = () => {
+    setShowTemplateModal(false)
+    navigate('/constructor/create', {
+      state: {
+        routineType: selectedType,
+        template: null
+      }
+    })
   }
 
   const hasMorning = routines.some(r => r.routine_type === 'morning')
@@ -116,7 +165,7 @@ export default function ConstructorPage() {
           routine={getRoutineByType('morning')}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onAdd={() => handleCreate('morning')}
+          onAdd={() => handleCreateClick('morning')}
           showAddButton={canAddMorning}
         />
 
@@ -125,7 +174,7 @@ export default function ConstructorPage() {
           routine={getRoutineByType('evening')}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onAdd={() => handleCreate('evening')}
+          onAdd={() => handleCreateClick('evening')}
           showAddButton={canAddEvening}
         />
 
@@ -134,7 +183,7 @@ export default function ConstructorPage() {
           routine={getRoutineByType('universal')}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onAdd={() => handleCreate('universal')}
+          onAdd={() => handleCreateClick('universal')}
           showAddButton={canAddUniversal}
         />
 
@@ -146,6 +195,23 @@ export default function ConstructorPage() {
           <button className="nav-item" onClick={() => navigate('/profile')}><img src="/icons/profile.svg" alt="profile" /></button>
         </nav>
       </div>
+
+      {showTemplateModal && (
+        <div className="modal-overlay" onClick={() => setShowTemplateModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2>Выберите шаблон</h2>
+            <div className="template-buttons">
+              <button className="template-btn" onClick={selectTemplate}>
+                Базовый шаблон
+              </button>
+              <button className="template-btn" onClick={selectEmpty}>
+                Пустая рутина
+              </button>
+            </div>
+            <button className="modal-close" onClick={() => setShowTemplateModal(false)}>Отмена</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -170,16 +236,13 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
   }
 
   const steps = [...routine.steps].sort((a, b) => a.step_order - b.step_order)
-
   const getFrequencyText = (step) => {
     if (step.frequency_type === 'daily') return frequencyRu.daily
     if (step.frequency_type === 'weekly') return frequencyRu.weekly(step.frequency_value)
     if (step.frequency_type === 'every_n_days') return frequencyRu.every_n_days(step.frequency_value)
     return 'неизвестно'
   }
-
   const translateProductName = (engName) => productNameRu[engName] || engName
-
   const stepColors = ['#FCE68F', '#F3BCBE', '#CDBCDB', '#D6DC82', '#FFAB86', '#C2CEDF', '#7881BB']
 
   return (
@@ -187,29 +250,22 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
       <div className="routine-header">
         <h2>{title}</h2>
       </div>
-
       <div className="routine-steps-list">
-        {steps.map((step, idx) => {
-          const translatedProduct = translateProductName(step.product.product_name)
-          const bgColor = stepColors[idx % stepColors.length]
-
-          return (
-            <div key={step.routine_step_id} className="step-item">
-              <div className="step-number">Шаг {step.step_order}</div>
-              <div className="step-row">
-                <div className="step-product-card" style={{ backgroundColor: bgColor }}>
-                  <div className="step-product-name">{translatedProduct}</div>
-                </div>
-                <div className="step-frequency-info">
-                  <div className="frequency-label">Частота:</div>
-                  <div className="frequency-value">{getFrequencyText(step)}</div>
-                </div>
+        {steps.map((step, idx) => (
+          <div key={step.routine_step_id} className="step-item">
+            <div className="step-number">Шаг {step.step_order}</div>
+            <div className="step-row">
+              <div className="step-product-card" style={{ backgroundColor: stepColors[idx % stepColors.length] }}>
+                <div className="step-product-name">{translateProductName(step.product.product_name)}</div>
+              </div>
+              <div className="step-frequency-info">
+                <div className="frequency-label">Частота:</div>
+                <div className="frequency-value">{getFrequencyText(step)}</div>
               </div>
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
-
       <div className="routine-actions">
         <button className="delete-btn" onClick={() => onDelete(routine.routine_id)}>Удалить</button>
         <button className="edit-btn" onClick={() => onEdit(routine)}>Изменить</button>
