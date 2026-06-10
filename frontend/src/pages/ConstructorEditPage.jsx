@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useDrag, useDrop, DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { getProductGroups, getProductsByGroup, getRoutines, createRoutine, updateRoutine, validateRoutine } from '../api/routineApi'
+import { getAllProducts, getComponentsByGroup } from '../api/groupComponentApi'
 import '../styles/constructor-edit.css'
 
 // ========== ПЕРЕВОДЫ ==========
@@ -108,8 +109,8 @@ const DraggableProduct = ({ product, color }) => {
   )
 }
 
-// ========== ШАГ РУТИНЫ (с двумя селектами) ==========
-const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency, onComponentChange, bgColor, availableComponents }) => {
+// ========== ШАГ РУТИНЫ ==========
+const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency, onComponentChange, bgColor, availableComponents, fetchingComponents }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.PRODUCT,
     drop: (item) => onDrop(item, index),
@@ -120,10 +121,9 @@ const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveD
   const productDisplay = productNameRu[baseName] || baseName
   const groupDisplay = groupNameRu[step.product_group] || step.product_group
 
-  // Текущий выбранный компонент
   const currentComponentId = step.component_id || ''
-  // Список компонентов для селекта (уже загружен)
   const comps = availableComponents[step.product_group] || []
+  const isLoading = fetchingComponents[step.product_group]
 
   const handleComponentSelect = (e) => {
     const compId = e.target.value === '' ? null : e.target.value
@@ -155,14 +155,18 @@ const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveD
             )}
           </div>
           <div className="step-component-select">
-            <select value={currentComponentId} onChange={handleComponentSelect}>
-              <option value="">Без компонента</option>
-              {comps.map(comp => (
-                <option key={comp.component_id} value={comp.component_id}>
-                  {componentNameRu[comp.component_name] || comp.component_name}
-                </option>
-              ))}
-            </select>
+            {isLoading ? (
+              <select disabled><option>Загрузка...</option></select>
+            ) : (
+              <select value={currentComponentId} onChange={handleComponentSelect}>
+                <option value="">Без компонента</option>
+                {comps.map(comp => (
+                  <option key={comp.component_id} value={comp.component_id}>
+                    {componentNameRu[comp.component_name] || comp.component_name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>
@@ -184,7 +188,7 @@ const AddStepZone = ({ onDrop }) => {
   )
 }
 
-// ========== МОДАЛЬНОЕ ОКНО ВЫБОРА КОМПОНЕНТА ПРИ ДОБАВЛЕНИИ ==========
+// ========== МОДАЛЬНОЕ ОКНО ВЫБОРА КОМПОНЕНТА ==========
 const ComponentModal = ({ baseName, groupName, components, onClose, onSelect }) => {
   const [selectedComponentId, setSelectedComponentId] = useState('')
   useEffect(() => {
@@ -223,20 +227,19 @@ export default function ConstructorEditPage() {
   const [routineType, setRoutineType] = useState(initialType)
   const [groups, setGroups] = useState([])
   const [selectedGroupId, setSelectedGroupId] = useState(null)
-  const [allProductsGroup, setAllProductsGroup] = useState([]) // продукты выбранной группы
-  const [allProductsGlobal, setAllProductsGlobal] = useState([]) // все продукты для поиска
+  const [allProductsGroup, setAllProductsGroup] = useState([])
+  const [allProductsGlobal, setAllProductsGlobal] = useState([])
   const [uniqueProducts, setUniqueProducts] = useState([])
   const [steps, setSteps] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [pendingProduct, setPendingProduct] = useState(null)
-  const [availableComponents, setAvailableComponents] = useState({}) // groupName -> comps[]
+  const [availableComponents, setAvailableComponents] = useState({})
   const [fetchingComponents, setFetchingComponents] = useState({})
 
   // Загрузка всех продуктов (глобально)
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
+    getAllProducts()
       .then(data => setAllProductsGlobal(data))
       .catch(console.error)
   }, [])
@@ -276,17 +279,16 @@ export default function ConstructorEditPage() {
     if (availableComponents[groupName] || fetchingComponents[groupName]) return
     setFetchingComponents(prev => ({ ...prev, [groupName]: true }))
     try {
-      const res = await fetch(`/api/group-components/by-group?group_name=${groupName}`)
-      const data = await res.json()
+      const data = await getComponentsByGroup(groupName)
       setAvailableComponents(prev => ({ ...prev, [groupName]: data }))
     } catch (err) {
-      console.error(err)
+      console.error('Failed to load components for group', groupName, err)
     } finally {
       setFetchingComponents(prev => ({ ...prev, [groupName]: false }))
     }
   }
 
-  // Подгрузка компонентов для всех групп, встречающихся в шагах
+  // Подгрузка компонентов для групп, которые уже есть в шагах
   useEffect(() => {
     steps.forEach(step => {
       if (step.product_group) fetchComponentsForGroup(step.product_group)
@@ -345,7 +347,6 @@ export default function ConstructorEditPage() {
 
   useEffect(() => { loadRoutine() }, [id, existingRoutine])
 
-  // Поиск продукта по базовому имени, группе и component_id
   const findProduct = (baseName, groupName, componentId) => {
     return allProductsGlobal.find(p => {
       const pBase = p.product_name.split(' (')[0]
@@ -353,7 +354,6 @@ export default function ConstructorEditPage() {
     })
   }
 
-  // Обработка перетаскивания продукта
   const handleProductDrop = (dragItem, targetIndex) => {
     if (!dragItem) return
     const { baseName, groupName } = dragItem
@@ -404,7 +404,6 @@ export default function ConstructorEditPage() {
     setPendingProduct(null)
   }
 
-  // Смена компонента у существующего шага
   const handleComponentChange = (stepIndex, componentId) => {
     const step = steps[stepIndex]
     const { baseProductName, product_group } = step
@@ -554,6 +553,7 @@ export default function ConstructorEditPage() {
                 onComponentChange={handleComponentChange}
                 bgColor={productColors[idx % productColors.length]}
                 availableComponents={availableComponents}
+                fetchingComponents={fetchingComponents}
               />
             ))}
           </div>
