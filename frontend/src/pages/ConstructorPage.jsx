@@ -4,14 +4,12 @@ import { getRoutines, deleteRoutine } from '../api/routineApi'
 import '../styles/constructor.css'
 
 const productNameRu = {
-  // Очищение
   'Foam Cleanser': 'Пенка для умывания',
   'Gel Cleanser': 'Гель для умывания',
   'Cream Gel Cleanser': 'Крем-гель для умывания',
   'Hydrophilic Oil': 'Гидрофильное масло',
   'Micellar Water': 'Мицелярная вода',
   'Basic Cleanser': 'Базовый очищающий гель',
-  // Увлажнение
   'Cream': 'Крем',
   'Serum': 'Сыворотка',
   'Essence': 'Эссенция',
@@ -21,23 +19,19 @@ const productNameRu = {
   'Hydrating Toner': 'Увлажняющий тонер',
   'Barrier Serum': 'Восстанавливающая сыворотка',
   'Basic SPF Cream': 'Базовый SPF-крем',
-  // Отшелушивание
   'Peeling Solution': 'Пилинг-раствор',
   'Pads': 'Пэды',
   'Scrub': 'Скраб',
   'Enzyme Powder': 'Энзимная пудра',
   'Acid Toner': 'Кислотный тонер',
   'BHA Pads': 'BHA-пэды',
-  // Борьба с акне
   'Spot Treatment': 'Точечное средство',
-  'Retinol Serum': 'Сыворотка',
-  'Azelaic Acid Serum': 'Сыворотка',
-  // Антивозрастной
+  'Retinol Serum': 'Сыворотка с ретинолом',
+  'Azelaic Acid Serum': 'Сыворотка с азелаином',
   'Night Cream': 'Ночной крем',
   'Anti Age Serum': 'Антивозрастная сыворотка',
   'Eye Cream': 'Крем для глаз',
   'Masks': 'Маски',
-  // Успокаивающий
   'Calming Mask': 'Успокаивающая маска',
   'Recovery Cream': 'Восстанавливающий крем'
 }
@@ -57,31 +51,36 @@ const frequencyRu = {
   every_n_days: (value) => `каждые ${value} ${value === 1 ? 'день' : 'дней'}`
 }
 
-// Шаблоны для выбора при создании
 const templates = {
   morning: {
     name: 'Базовое утро',
     steps: [
       { product_name: 'Foam Cleanser', frequency_type: 'daily', frequency_value: 0 },
-      { product_name: 'Moisturizing Cream', frequency_type: 'daily', frequency_value: 0 },
-      { product_name: 'Basic SPF Cream', frequency_type: 'daily', frequency_value: 0 }
+      { product_name: 'Cream', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Essence', frequency_type: 'daily', frequency_value: 0 }
     ]
   },
   evening: {
     name: 'Базовый вечер',
     steps: [
       { product_name: 'Gel Cleanser', frequency_type: 'daily', frequency_value: 0 },
-      { product_name: 'Retinol Serum', frequency_type: 'weekly', frequency_value: 1 },
+      { product_name: 'Anti Age Serum', frequency_type: 'weekly', frequency_value: 1 },
       { product_name: 'Calming Mask', frequency_type: 'weekly', frequency_value: 4 }
     ]
   },
   universal: {
     name: 'Универсальная',
     steps: [
-      { product_name: 'Moisturizing Cream', frequency_type: 'daily', frequency_value: 0 },
-      { product_name: 'Basic SPF Cream', frequency_type: 'daily', frequency_value: 0 }
+      { product_name: 'Cream', frequency_type: 'daily', frequency_value: 0 },
+      { product_name: 'Essence', frequency_type: 'daily', frequency_value: 0 }
     ]
   }
+}
+
+// Вспомогательная функция: отрезает компонент в скобках и переводит базовое имя
+const translateProduct = (fullName) => {
+  const baseName = fullName.split(' (')[0]
+  return productNameRu[baseName] || baseName
 }
 
 export default function ConstructorPage() {
@@ -221,7 +220,7 @@ export default function ConstructorPage() {
 
       {showTemplateModal && (
         <div className="modal-overlay" onClick={() => setShowTemplateModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="template-modal" onClick={(e) => e.stopPropagation()}>
             <h2>Выберите шаблон</h2>
             <div className="template-buttons">
               <button className="template-btn" onClick={selectTemplate}>
@@ -265,7 +264,11 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
     if (step.frequency_type === 'every_n_days') return frequencyRu.every_n_days(step.frequency_value)
     return 'неизвестно'
   }
-  const translateProductName = (engName) => productNameRu[engName] || engName
+  // Функция перевода с отсечением компонента
+  const translateProduct = (fullName) => {
+    const baseName = fullName.split(' (')[0]
+    return productNameRu[baseName] || baseName
+  }
   const stepColors = ['#FCE68F', '#F3BCBE', '#CDBCDB', '#D6DC82', '#FFAB86', '#C2CEDF', '#7881BB']
 
   return (
@@ -279,7 +282,7 @@ function RoutineSection({ title, routine, onEdit, onDelete, onAdd, showAddButton
             <div className="step-number">Шаг {step.step_order}</div>
             <div className="step-row">
               <div className="step-product-card" style={{ backgroundColor: stepColors[idx % stepColors.length] }}>
-                <div className="step-product-name">{translateProductName(step.product.product_name)}</div>
+                <div className="step-product-name">{translateProduct(step.product.product_name)}</div>
               </div>
               <div className="step-frequency-info">
                 <div className="frequency-label">Частота:</div>

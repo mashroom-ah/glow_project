@@ -28,6 +28,7 @@ import {
   updateNotificationSettings,
 } from '../api/notificationApi'
 
+import { cities } from '../utils/cities' // импортируем список городов
 import '../styles/profile.css'
 
 const activityRu = {
@@ -163,7 +164,6 @@ export default function ProfilePage() {
   }
 
   const handleSaveItem = async () => {
-    // Валидация
     if (!itemForm.name.trim()) {
       alert('Введите название продукта')
       return
@@ -210,7 +210,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Функция архивации/восстановления
   const toggleArchive = async (item) => {
     try {
       if (item.is_active) {
@@ -303,7 +302,18 @@ export default function ProfilePage() {
             </div>
             <div className="form-group">
               <label>Город</label>
-              <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+              <select
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                className="auth-select"
+              >
+                <option value="">Выберите город</option>
+                {cities.map((city) => (
+                  <option key={city.value} value={city.value}>
+                    {city.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -392,17 +402,7 @@ export default function ProfilePage() {
                     }}
                   />
                 </div>
-                <div className="form-group">
-                  <label>Часовой пояс</label>
-                  <input
-                    value={notificationSettings.timezone || ''}
-                    onChange={async (e) => {
-                      const body = { timezone: e.target.value }
-                      setNotificationSettings({ ...notificationSettings, ...body })
-                      await updateNotificationSettings(body)
-                    }}
-                  />
-                </div>
+                {/* Убираем поле часового пояса */}
               </>
             )}
 

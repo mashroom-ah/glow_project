@@ -41,7 +41,6 @@
   gap: 24px;
 }
 
-/* Белый фон для заголовка – уменьшенная высота */
 .routine-header {
   background: white;
   border-radius: 28px;
@@ -117,7 +116,6 @@
   border-radius: 20px;
   padding: 20px 12px;
   margin: 4px;
-  /* добавлено */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -195,7 +193,6 @@
   transform: translateY(-2px);
 }
 
-/* НИЖНЯЯ НАВИГАЦИЯ */
 .bottom-nav {
   position: fixed;
   left: 50%;
@@ -237,12 +234,10 @@
   background: rgba(155, 164, 222, 0.12);
 }
 
-/* Адаптация */
 @media (min-width: 700px) {
   .constructor-container {
     max-width: 700px;
   }
-
   .bottom-nav {
     max-width: 700px;
   }
@@ -253,28 +248,22 @@
     max-width: 1000px;
     padding: 0 32px;
   }
-
   .routine-header {
     padding: 16px;
   }
-
   .routine-header h2 {
     font-size: 36px;
   }
-
   .step-product-card {
     padding: 30px;
   }
-
   .step-product-name {
     font-size: 20px;
   }
-
   .frequency-label,
   .frequency-value {
     font-size: 18px;
   }
-
   .bottom-nav {
     max-width: 1000px;
     width: calc(100% - 64px);
@@ -287,21 +276,86 @@
   .step-row {
     gap: 12px;
   }
-
   .step-product-card {
     padding: 15px 8px;
   }
-
   .step-product-name {
     font-size: 12px;
   }
-
   .frequency-label,
   .frequency-value {
     font-size: 12px;
   }
-
   .routine-actions {
     flex-direction: row;
+  }
+}
+
+/* Модалка выбора шаблона */
+.template-modal {
+  background: white;
+  border-radius: 28px;
+  padding: 32px 24px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.template-modal h2 {
+  font-size: 28px;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.template-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.template-btn {
+  background: #F3BCBE;
+  border: none;
+  padding: 14px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-family: 'Ledger', serif;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.template-btn:hover {
+  background: #e0a5a7;
+  transform: translateY(-2px);
+}
+
+.modal-close {
+  background: #d9d9d9;
+  border: none;
+  padding: 12px;
+  border-radius: 20px;
+  font-size: 16px;
+  width: 100%;
+  cursor: pointer;
+  font-family: 'Ledger', serif;
+}
+
+.modal-close:hover {
+  background: #c0c0c0;
+}
+
+@media (min-width: 700px) {
+  .template-modal {
+    max-width: 460px;
+    padding: 40px 32px;
+  }
+  .template-modal h2 {
+    font-size: 32px;
+  }
+  .template-btn {
+    font-size: 20px;
+    padding: 16px;
   }
 }

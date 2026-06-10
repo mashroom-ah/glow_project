@@ -271,6 +271,17 @@
   overflow-y: auto;
 }
 
+/* Специальная модалка для RoutineModal – шире на десктопе */
+.routine-modal-card {
+  background: white;
+  border-radius: 30px;
+  padding: clamp(20px, 4vw, 34px);
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 520px;
+}
+
 .modal-card h2 {
   margin-bottom: 24px;
   font-size: clamp(26px, 4vw, 38px);
@@ -432,54 +443,48 @@
   font-size: clamp(18px, 2vw, 22px);
 }
 
-/* Адаптация для мобильных */
 @media (max-width: 540px) {
   .main-container {
     max-width: 100%;
   }
-
   .date-card {
     width: clamp(74px, 24vw, 96px);
     height: clamp(74px, 24vw, 96px);
   }
-
   .modal-card {
     border-radius: 24px;
   }
-
   .reaction-score {
     padding-left: 0;
   }
 }
 
-/* Адаптация для планшетов и десктопа */
 @media (min-width: 900px) {
   .main-container {
     max-width: 1180px;
   }
-
   .routine-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(320px, 1fr));
     gap: 30px;
   }
-
   .bottom-nav {
     max-width: 1180px;
     width: calc(100% - 48px);
     border-radius: 24px 24px 0 0;
     padding: 0 28px;
   }
-
   .dates-row {
     justify-content: center;
   }
-
   .streak-banner {
     min-height: 56px;
   }
-
   .spf-banner {
     min-height: 56px;
+  }
+  /* Увеличиваем модалку на десктопе */
+  .routine-modal-card {
+    max-width: 700px;
   }
 }

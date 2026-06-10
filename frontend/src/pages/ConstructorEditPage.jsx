@@ -30,8 +30,8 @@ const productNameRu = {
   'Acid Toner': 'Кислотный тонер',
   'BHA Pads': 'BHA-пэды',
   'Spot Treatment': 'Точечное средство',
-  'Retinol Serum': 'Сыворотка',
-  'Azelaic Acid Serum': 'Сыворотка',
+  'Retinol Serum': 'Сыворотка с ретинолом',
+  'Azelaic Acid Serum': 'Сыворотка с азелаином',
   'Night Cream': 'Ночной крем',
   'Anti Age Serum': 'Антивозрастная сыворотка',
   'Eye Cream': 'Крем для глаз',
@@ -194,10 +194,11 @@ const ComponentModal = ({ baseName, groupName, components, onClose, onSelect }) 
   useEffect(() => {
     if (components.length > 0) setSelectedComponentId(components[0].component_id)
   }, [components])
+  const translatedBaseName = productNameRu[baseName] || baseName
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h3>Выберите активный компонент для "{baseName}"</h3>
+        <h3>Выберите активный компонент для "{translatedBaseName}"</h3>
         <select value={selectedComponentId} onChange={e => setSelectedComponentId(e.target.value)}>
           <option value="">Без компонента</option>
           {components.map(comp => (
@@ -274,7 +275,6 @@ export default function ConstructorEditPage() {
     }
   }, [selectedGroupId])
 
-  // Загрузка компонентов для группы
   const fetchComponentsForGroup = async (groupName) => {
     if (availableComponents[groupName] || fetchingComponents[groupName]) return
     setFetchingComponents(prev => ({ ...prev, [groupName]: true }))
@@ -288,7 +288,6 @@ export default function ConstructorEditPage() {
     }
   }
 
-  // Подгрузка компонентов для групп, которые уже есть в шагах
   useEffect(() => {
     steps.forEach(step => {
       if (step.product_group) fetchComponentsForGroup(step.product_group)
@@ -342,10 +341,42 @@ export default function ConstructorEditPage() {
           setSteps(loadedSteps)
         } else navigate('/constructor')
       } catch (err) { console.error(err) } finally { setLoading(false) }
-    } else setLoading(false)
+    } else if (state?.template) {
+      const template = state.template
+      setRoutineType(state.routineType || 'morning')
+      const allProds = await getAllProducts()
+      const newSteps = []
+      for (let i = 0; i < template.steps.length; i++) {
+        const stepTmpl = template.steps[i]
+        const product = allProds.find(p => p.product_name === stepTmpl.product_name && p.component_id === null)
+        if (product) {
+          let baseName = product.product_name
+          const parenIndex = baseName.indexOf(' (')
+          if (parenIndex !== -1) baseName = baseName.substring(0, parenIndex)
+          newSteps.push({
+            id: Date.now() + i,
+            product_id: product.product_id,
+            product_name: product.product_name,
+            product_group: product.group_name,
+            baseProductName: baseName,
+            step_order: i + 1,
+            frequency_type: stepTmpl.frequency_type,
+            frequency_value: stepTmpl.frequency_value,
+            component_id: null,
+            component_name: null
+          })
+        } else {
+          console.warn(`Продукт ${stepTmpl.product_name} не найден, пропускаем`)
+        }
+      }
+      setSteps(newSteps)
+      setLoading(false)
+    } else {
+      setLoading(false)
+    }
   }
 
-  useEffect(() => { loadRoutine() }, [id, existingRoutine])
+  useEffect(() => { loadRoutine() }, [id, existingRoutine, state])
 
   const findProduct = (baseName, groupName, componentId) => {
     return allProductsGlobal.find(p => {
