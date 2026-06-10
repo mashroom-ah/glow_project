@@ -28,8 +28,8 @@ cron.schedule('* * * * *', async () => {
     ) {
       for (const subscription of setting.NotificationSubscriptions) {
         await sendPush(subscription, {
-          title: 'Morning routine',
-          body: 'Time for your skincare routine',
+          title: 'Утренняя рутиня',
+          body: 'Время утренней рутины',
         });
       }
     }
@@ -40,8 +40,8 @@ cron.schedule('* * * * *', async () => {
     ) {
       for (const subscription of setting.NotificationSubscriptions) {
         await sendPush(subscription, {
-          title: 'Evening routine',
-          body: 'Time for your evening skincare',
+          title: 'Вечерняя рутина',
+          body: 'Время вечернеё рутины',
         });
       }
     }

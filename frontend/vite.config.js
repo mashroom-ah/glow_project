@@ -8,6 +8,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'sakura.png', 'bg-auth.jpg'],
+      // Для кастомного Service Worker (обработка push)
+      injectManifest: {
+        swSrc: 'public/sw.js',
+        swDest: 'dist/sw.js',
+      },
       manifest: {
         name: 'Glow',
         short_name: 'Glow',

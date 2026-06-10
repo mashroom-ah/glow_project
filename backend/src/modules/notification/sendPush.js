@@ -1,30 +1,19 @@
-const webpush = require(
-  '../../config/webpush'
-);
+const webpush = require('../../config/webpush');  // теперь путь правильный
 
-async function sendPush(
-  subscription,
-  payload
-) {
+async function sendPush(subscription, payload) {
   try {
     await webpush.sendNotification(
       {
-        endpoint:
-          subscription.endpoint,
-
+        endpoint: subscription.endpoint,
         keys: {
-          p256dh:
-            subscription.p256dh,
-
-          auth:
-            subscription.auth,
+          p256dh: subscription.p256dh,
+          auth: subscription.auth,
         },
       },
-
       JSON.stringify(payload)
     );
   } catch (error) {
-    console.error(error);
+    console.error('Push error:', error.statusCode, error.body);
   }
 }
 

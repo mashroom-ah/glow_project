@@ -1,5 +1,15 @@
 import api from './axios'
 
+export const subscribeToPush = async (subscription) => {
+  const { data } = await api.post('/notifications/subscriptions', subscription);
+  return data;
+};
+
+export const unsubscribeFromPush = async (endpoint) => {
+  const { data } = await api.delete('/notifications/subscriptions', { data: { endpoint } });
+  return data;
+};
+
 export const getNotificationSettings =
   async () => {
     const { data } =

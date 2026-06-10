@@ -8,8 +8,10 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+# Добавляем увеличение памяти
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+RUN npm run build
 
 FROM nginx:stable-alpine
 

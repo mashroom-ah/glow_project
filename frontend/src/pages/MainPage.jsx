@@ -27,6 +27,7 @@ import {
 } from '../api/spfApi'
 
 import RoutineModal from '../components/RoutineModal'
+import { usePushNotifications } from '../hooks/usePushNotifications'  // <-- импорт хука
 
 import '../styles/main.css'
 
@@ -95,6 +96,9 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true)
 
   const dateInputRef = useRef(null)
+
+  // Подключаем push-уведомления
+  usePushNotifications()
 
   const routinesMap = useMemo(() => {
     const map = {}
