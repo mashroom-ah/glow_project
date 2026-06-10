@@ -2,138 +2,143 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // ==================== 1. ГРУППЫ ПРОДУКТОВ ====================
     await queryInterface.sequelize.query(`
-      -- PRODUCT GROUPS
       INSERT INTO product_group (group_id, group_name)
       SELECT gen_random_uuid(), name
-      FROM (VALUES ('cleansing'), ('hydration'), ('peeling'), ('anti_acne'), ('calming')) AS v(name)
+      FROM (VALUES 
+        ('cleansing'), 
+        ('hydration'), 
+        ('peeling'), 
+        ('anti_acne'), 
+        ('anti_age'),
+        ('calming')
+      ) AS v(name)
       WHERE NOT EXISTS (SELECT 1 FROM product_group WHERE group_name = v.name);
+    `);
 
-      -- ACTIVE COMPONENTS
+    // ==================== 2. АКТИВНЫЕ КОМПОНЕНТЫ ====================
+    await queryInterface.sequelize.query(`
       INSERT INTO active_component (component_id, component_name)
       SELECT gen_random_uuid(), name
-      FROM (VALUES ('niacinamide'), ('retinol'), ('aha'), ('bha'), ('hyaluronic_acid'),
-                   ('centella_asiatica'), ('azelaic_acid'), ('panthenol')) AS v(name)
+      FROM (VALUES 
+        -- очищение
+        ('niacinamide'), ('aha'), ('bha'), ('pha'), ('azelaic_acid'), ('zinc'), ('vitamin_c'), ('retinol'),
+        -- увлажнение
+        ('hyaluronic_acid'), ('ceramides'), ('panthenol'), ('snail_mucin'), ('centella_asiatica'), ('squalane'), ('oils'), ('aloe_vera'), ('urea'),
+        -- отшелушивание (peeling)
+        ('glycolic_acid'), ('lactic_acid'), ('mandelic_acid'), ('salicylic_acid'), ('gluconolactone'), ('lactobionic_acid'), ('scrub_particles'),
+        -- борьба с акне
+        ('benzoyl_peroxide'), ('sulfur'),
+        -- антивозрастной
+        ('retinal'), ('peptides'),
+        -- успокаивающий
+        ('colloidal_oatmeal')
+      ) AS v(name)
       WHERE NOT EXISTS (SELECT 1 FROM active_component WHERE component_name = v.name);
+    `);
 
-      -- GROUP COMPONENTS
-      INSERT INTO group_component (group_component_id, group_id, component_id)
-      SELECT gen_random_uuid(), pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'cleansing' AND ac.component_name IN ('niacinamide', 'bha')
-        AND NOT EXISTS (SELECT 1 FROM group_component gc WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id);
+    // ==================== 3. СВЯЗИ ГРУПП С КОМПОНЕНТАМИ ====================
+    const groupComponents = {
+      cleansing: ['niacinamide', 'aha', 'bha', 'pha', 'azelaic_acid', 'zinc', 'vitamin_c', 'retinol'],
+      hydration: ['hyaluronic_acid', 'ceramides', 'niacinamide', 'panthenol', 'snail_mucin', 'centella_asiatica', 'squalane', 'oils', 'aloe_vera', 'urea'],
+      peeling: ['glycolic_acid', 'lactic_acid', 'mandelic_acid', 'salicylic_acid', 'gluconolactone', 'lactobionic_acid', 'scrub_particles'],
+      anti_acne: ['niacinamide', 'azelaic_acid', 'benzoyl_peroxide', 'sulfur', 'salicylic_acid'],
+      anti_age: ['retinol', 'retinal', 'peptides', 'vitamin_c', 'hyaluronic_acid'],
+      calming: ['aloe_vera', 'centella_asiatica', 'colloidal_oatmeal', 'panthenol']
+    };
 
-      INSERT INTO group_component (group_component_id, group_id, component_id)
-      SELECT gen_random_uuid(), pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'hydration' AND ac.component_name IN ('hyaluronic_acid', 'panthenol', 'niacinamide', 'centella_asiatica')
-        AND NOT EXISTS (SELECT 1 FROM group_component gc WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id);
+    for (const [groupName, components] of Object.entries(groupComponents)) {
+      for (const compName of components) {
+        await queryInterface.sequelize.query(`
+          INSERT INTO group_component (group_component_id, group_id, component_id)
+          SELECT gen_random_uuid(), pg.group_id, ac.component_id
+          FROM product_group pg, active_component ac
+          WHERE pg.group_name = '${groupName}' AND ac.component_name = '${compName}'
+          AND NOT EXISTS (
+            SELECT 1 FROM group_component gc
+            WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id
+          );
+        `);
+      }
+    }
 
-      INSERT INTO group_component (group_component_id, group_id, component_id)
-      SELECT gen_random_uuid(), pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'peeling' AND ac.component_name IN ('aha', 'bha')
-        AND NOT EXISTS (SELECT 1 FROM group_component gc WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id);
+    // ==================== 4. ПРОДУКТЫ ====================
+    const baseProducts = {
+      cleansing: [
+        'Foam Cleanser', 'Gel Cleanser', 'Cream Gel Cleanser', 'Hydrophilic Oil', 'Micellar Water'
+      ],
+      hydration: [
+        'Cream', 'Serum', 'Essence', 'Toner', 'Mask'
+      ],
+      peeling: [
+        'Peeling Solution', 'Pads', 'Scrub', 'Enzyme Powder', 'Acid Toner'
+      ],
+      anti_acne: [
+        'Serum', 'Spot Treatment', 'Toner', 'Cream', 'Pads'
+      ],
+      anti_age: [
+        'Night Cream', 'Anti Age Serum', 'Eye Cream', 'Masks'
+      ],
+      calming: [
+        'Cream', 'Mask', 'Serum', 'Toner'
+      ]
+    };
 
-      INSERT INTO group_component (group_component_id, group_id, component_id)
-      SELECT gen_random_uuid(), pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'anti_acne' AND ac.component_name IN ('retinol', 'azelaic_acid', 'niacinamide')
-        AND NOT EXISTS (SELECT 1 FROM group_component gc WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id);
+    // 4.1 Сначала создаём продукты без компонента (базовые)
+    for (const [groupName, products] of Object.entries(baseProducts)) {
+      for (const productName of products) {
+        await queryInterface.sequelize.query(`
+          INSERT INTO product (product_id, product_name, group_id, component_id)
+          SELECT gen_random_uuid(), :name, pg.group_id, NULL
+          FROM product_group pg
+          WHERE pg.group_name = :groupName
+          AND NOT EXISTS (
+            SELECT 1 FROM product p 
+            WHERE p.product_name = :name 
+              AND p.group_id = pg.group_id 
+              AND p.component_id IS NULL
+          );
+        `, { replacements: { name: productName, groupName } });
+      }
+    }
 
-      INSERT INTO group_component (group_component_id, group_id, component_id)
-      SELECT gen_random_uuid(), pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'calming' AND ac.component_name IN ('panthenol', 'centella_asiatica')
-        AND NOT EXISTS (SELECT 1 FROM group_component gc WHERE gc.group_id = pg.group_id AND gc.component_id = ac.component_id);
+    // 4.2 Создаём продукты со всеми компонентами для каждой группы
+    for (const [groupName, products] of Object.entries(baseProducts)) {
+      const components = groupComponents[groupName];
+      if (!components) continue;
+      for (const productName of products) {
+        for (const compName of components) {
+          await queryInterface.sequelize.query(`
+            INSERT INTO product (product_id, product_name, group_id, component_id)
+            SELECT gen_random_uuid(), :fullName, pg.group_id, ac.component_id
+            FROM product_group pg, active_component ac
+            WHERE pg.group_name = :groupName 
+              AND ac.component_name = :compName
+              AND NOT EXISTS (
+                SELECT 1 FROM product p
+                WHERE p.product_name = :fullName
+                  AND p.group_id = pg.group_id
+                  AND p.component_id = ac.component_id
+              );
+          `, {
+            replacements: {
+              fullName: `${productName} (${compName})`,
+              groupName,
+              compName
+            }
+          });
+        }
+      }
+    }
 
-      -- PRODUCTS
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Foam Cleanser', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'cleansing' AND ac.component_name = 'niacinamide'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Foam Cleanser' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Gel Cleanser', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'cleansing' AND ac.component_name = 'bha'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Gel Cleanser' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Moisturizing Cream', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'hydration' AND ac.component_name = 'hyaluronic_acid'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Moisturizing Cream' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Hydrating Toner', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'hydration' AND ac.component_name = 'panthenol'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Hydrating Toner' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Barrier Serum', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'hydration' AND ac.component_name = 'centella_asiatica'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Barrier Serum' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Acid Toner', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'peeling' AND ac.component_name = 'aha'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Acid Toner' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'BHA Pads', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'peeling' AND ac.component_name = 'bha'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'BHA Pads' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Retinol Serum', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'anti_acne' AND ac.component_name = 'retinol'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Retinol Serum' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Azelaic Acid Serum', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'anti_acne' AND ac.component_name = 'azelaic_acid'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Azelaic Acid Serum' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Calming Mask', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'calming' AND ac.component_name = 'centella_asiatica'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Calming Mask' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Recovery Cream', pg.group_id, ac.component_id
-      FROM product_group pg, active_component ac
-      WHERE pg.group_name = 'calming' AND ac.component_name = 'panthenol'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Recovery Cream' AND p.group_id = pg.group_id AND (p.component_id = ac.component_id OR (p.component_id IS NULL AND ac.component_id IS NULL)));
-
-      -- продукты без активного компонента
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Basic SPF Cream', pg.group_id, NULL
-      FROM product_group pg
-      WHERE pg.group_name = 'hydration'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Basic SPF Cream' AND p.group_id = pg.group_id AND p.component_id IS NULL);
-
-      INSERT INTO product (product_id, product_name, group_id, component_id)
-      SELECT gen_random_uuid(), 'Basic Cleanser', pg.group_id, NULL
-      FROM product_group pg
-      WHERE pg.group_name = 'cleansing'
-        AND NOT EXISTS (SELECT 1 FROM product p WHERE p.product_name = 'Basic Cleanser' AND p.group_id = pg.group_id AND p.component_id IS NULL);
-
-      -- REACTION GROUPS
+    // ==================== 5. РЕАКЦИИ ====================
+    await queryInterface.sequelize.query(`
       INSERT INTO reaction_group (reaction_group_id, reaction_group_name)
       SELECT gen_random_uuid(), name
       FROM (VALUES ('hydration'), ('irritation'), ('acne'), ('sensitivity'), ('texture')) AS v(name)
       WHERE NOT EXISTS (SELECT 1 FROM reaction_group WHERE reaction_group_name = v.name);
 
-      -- REACTIONS
       INSERT INTO reaction (reaction_id, reaction_group_id, reaction_name)
       SELECT gen_random_uuid(), rg.reaction_group_id, data.reaction_name
       FROM (
@@ -163,12 +168,12 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.sequelize.query(`
-      DELETE FROM reaction;
-      DELETE FROM reaction_group;
       DELETE FROM product;
       DELETE FROM group_component;
       DELETE FROM active_component;
       DELETE FROM product_group;
+      DELETE FROM reaction;
+      DELETE FROM reaction_group;
     `);
-  }
+  },
 };

@@ -4,19 +4,42 @@ import { getRoutines, deleteRoutine } from '../api/routineApi'
 import '../styles/constructor.css'
 
 const productNameRu = {
+  // Очищение
   'Foam Cleanser': 'Пенка для умывания',
   'Gel Cleanser': 'Гель для умывания',
+  'Cream Gel Cleanser': 'Крем-гель для умывания',
+  'Hydrophilic Oil': 'Гидрофильное масло',
+  'Micellar Water': 'Мицелярная вода',
+  'Basic Cleanser': 'Базовый очищающий гель',
+  // Увлажнение
+  'Cream': 'Крем',
+  'Serum': 'Сыворотка',
+  'Essence': 'Эссенция',
+  'Toner': 'Тонер',
+  'Mask': 'Маска',
   'Moisturizing Cream': 'Увлажняющий крем',
   'Hydrating Toner': 'Увлажняющий тонер',
   'Barrier Serum': 'Восстанавливающая сыворотка',
+  'Basic SPF Cream': 'Базовый SPF-крем',
+  // Отшелушивание
+  'Peeling Solution': 'Пилинг-раствор',
+  'Pads': 'Пэды',
+  'Scrub': 'Скраб',
+  'Enzyme Powder': 'Энзимная пудра',
   'Acid Toner': 'Кислотный тонер',
   'BHA Pads': 'BHA-пэды',
-  'Retinol Serum': 'Сыворотка с ретинолом',
-  'Azelaic Acid Serum': 'Сыворотка с азелаиновой кислотой',
+  // Борьба с акне
+  'Spot Treatment': 'Точечное средство',
+  'Retinol Serum': 'Сыворотка',
+  'Azelaic Acid Serum': 'Сыворотка',
+  // Антивозрастной
+  'Night Cream': 'Ночной крем',
+  'Anti Age Serum': 'Антивозрастная сыворотка',
+  'Eye Cream': 'Крем для глаз',
+  'Masks': 'Маски',
+  // Успокаивающий
   'Calming Mask': 'Успокаивающая маска',
-  'Recovery Cream': 'Восстанавливающий крем',
-  'Basic SPF Cream': 'Базовый SPF-крем',
-  'Basic Cleanser': 'Базовый очищающий гель'
+  'Recovery Cream': 'Восстанавливающий крем'
 }
 
 const routineTypeRu = {

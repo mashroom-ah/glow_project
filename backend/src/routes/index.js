@@ -14,6 +14,7 @@ const waterRoutes = require('../modules/water/water.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
 const streakRoutes = require('../modules/streak/streak.routes');
 const spfRoutes = require('../modules/spf/spf.routes');
+const groupComponentRoutes = require('../modules/group-component/groupComponent.routes');
 
 const router = new Router();
 
@@ -31,5 +32,6 @@ router.use('/water', waterRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/streak', streakRoutes);
 router.use('/spf', spfRoutes);
+router.use('/group-component', groupComponentRoutes);
 
 module.exports = router;
