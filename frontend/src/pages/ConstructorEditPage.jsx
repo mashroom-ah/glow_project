@@ -7,14 +7,12 @@ import '../styles/constructor-edit.css'
 
 // ========== ПЕРЕВОДЫ ==========
 const productNameRu = {
-  // Очищение
   'Foam Cleanser': 'Пенка для умывания',
   'Gel Cleanser': 'Гель для умывания',
   'Cream Gel Cleanser': 'Крем-гель для умывания',
   'Hydrophilic Oil': 'Гидрофильное масло',
   'Micellar Water': 'Мицелярная вода',
   'Basic Cleanser': 'Базовый очищающий гель',
-  // Увлажнение
   'Cream': 'Крем',
   'Serum': 'Сыворотка',
   'Essence': 'Эссенция',
@@ -24,23 +22,19 @@ const productNameRu = {
   'Hydrating Toner': 'Увлажняющий тонер',
   'Barrier Serum': 'Восстанавливающая сыворотка',
   'Basic SPF Cream': 'Базовый SPF-крем',
-  // Отшелушивание
   'Peeling Solution': 'Пилинг-раствор',
   'Pads': 'Пэды',
   'Scrub': 'Скраб',
   'Enzyme Powder': 'Энзимная пудра',
   'Acid Toner': 'Кислотный тонер',
   'BHA Pads': 'BHA-пэды',
-  // Борьба с акне
   'Spot Treatment': 'Точечное средство',
   'Retinol Serum': 'Сыворотка',
   'Azelaic Acid Serum': 'Сыворотка',
-  // Антивозрастной
   'Night Cream': 'Ночной крем',
   'Anti Age Serum': 'Антивозрастная сыворотка',
   'Eye Cream': 'Крем для глаз',
   'Masks': 'Маски',
-  // Успокаивающий
   'Calming Mask': 'Успокаивающая маска',
   'Recovery Cream': 'Восстанавливающий крем'
 }
@@ -86,12 +80,6 @@ const groupNameRu = {
   calming: 'Успокаивание'
 }
 
-const routineTypeRu = {
-  morning: 'Утренняя',
-  evening: 'Вечерняя',
-  universal: 'Универсальная'
-}
-
 const frequencyOptions = [
   { value: 'daily', label: 'Каждый день' },
   { value: 'weekly', label: 'Раз в неделю' },
@@ -101,14 +89,14 @@ const frequencyOptions = [
 const productColors = ['#FCE68F', '#F3BCBE', '#CDBCDB', '#D6DC82', '#FFAB86', '#C2CEDF', '#7881BB']
 const ItemTypes = { PRODUCT: 'product' }
 
-// ========== КОМПОНЕНТ ПЕРЕТАСКИВАЕМОГО ПРОДУКТА ==========
+// ========== ПЕРЕТАСКИВАЕМЫЙ ПРОДУКТ ==========
 const DraggableProduct = ({ product, color }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.PRODUCT,
     item: {
       baseName: product.baseName,
-      groupId: product.group_id,
-      groupName: product.group_name
+      groupName: product.group_name,
+      groupId: product.group_id
     },
     collect: (monitor) => ({ isDragging: !!monitor.isDragging() })
   }))
@@ -120,18 +108,27 @@ const DraggableProduct = ({ product, color }) => {
   )
 }
 
-// ========== КОМПОНЕНТ ШАГА ==========
-const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency, bgColor }) => {
+// ========== ШАГ РУТИНЫ (с двумя селектами) ==========
+const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveDown, onUpdateFrequency, onComponentChange, bgColor, availableComponents }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.PRODUCT,
     drop: (item) => onDrop(item, index),
     collect: (monitor) => ({ isOver: !!monitor.isOver() })
   }))
 
-  const baseName = step.product_name.split(' (')[0]
+  const baseName = step.baseProductName || step.product_name.split(' (')[0]
   const productDisplay = productNameRu[baseName] || baseName
   const groupDisplay = groupNameRu[step.product_group] || step.product_group
-  const componentDisplay = step.component_name ? (componentNameRu[step.component_name] || step.component_name) : null
+
+  // Текущий выбранный компонент
+  const currentComponentId = step.component_id || ''
+  // Список компонентов для селекта (уже загружен)
+  const comps = availableComponents[step.product_group] || []
+
+  const handleComponentSelect = (e) => {
+    const compId = e.target.value === '' ? null : e.target.value
+    onComponentChange(index, compId)
+  }
 
   return (
     <div ref={drop} className={`step-item ${isOver ? 'drop-over' : ''}`}>
@@ -147,22 +144,33 @@ const StepItem = ({ step, index, totalSteps, onDrop, onRemove, onMoveUp, onMoveD
         <div className="step-product-card" style={{ backgroundColor: bgColor }}>
           <div className="step-product-name">{productDisplay}</div>
           <div className="step-product-group">{groupDisplay}</div>
-          {componentDisplay && <div className="step-component">Активный компонент: {componentDisplay}</div>}
         </div>
-        <div className="step-frequency">
-          <select value={step.frequency_type} onChange={(e) => onUpdateFrequency(index, 'frequency_type', e.target.value)}>
-            {frequencyOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-          {step.frequency_type === 'every_n_days' && (
-            <input type="number" min="1" value={step.frequency_value} onChange={(e) => onUpdateFrequency(index, 'frequency_value', parseInt(e.target.value) || 0)} />
-          )}
+        <div className="step-freq-comp">
+          <div className="step-frequency">
+            <select value={step.frequency_type} onChange={(e) => onUpdateFrequency(index, 'frequency_type', e.target.value)}>
+              {frequencyOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            </select>
+            {step.frequency_type === 'every_n_days' && (
+              <input type="number" min="1" value={step.frequency_value} onChange={(e) => onUpdateFrequency(index, 'frequency_value', parseInt(e.target.value) || 0)} />
+            )}
+          </div>
+          <div className="step-component-select">
+            <select value={currentComponentId} onChange={handleComponentSelect}>
+              <option value="">Без компонента</option>
+              {comps.map(comp => (
+                <option key={comp.component_id} value={comp.component_id}>
+                  {componentNameRu[comp.component_name] || comp.component_name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-// ========== ЗОНА ДОБАВЛЕНИЯ НОВОГО ШАГА ==========
+// ========== ЗОНА ДОБАВЛЕНИЯ ==========
 const AddStepZone = ({ onDrop }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.PRODUCT,
@@ -176,54 +184,34 @@ const AddStepZone = ({ onDrop }) => {
   )
 }
 
-// ========== МОДАЛЬНОЕ ОКНО ВЫБОРА КОМПОНЕНТА ==========
-const ComponentModal = ({ baseName, groupName, onClose, onSelect }) => {
+// ========== МОДАЛЬНОЕ ОКНО ВЫБОРА КОМПОНЕНТА ПРИ ДОБАВЛЕНИИ ==========
+const ComponentModal = ({ baseName, groupName, components, onClose, onSelect }) => {
   const [selectedComponentId, setSelectedComponentId] = useState('')
-  const [availableComponents, setAvailableComponents] = useState([])
-  const [loading, setLoading] = useState(true)
-
   useEffect(() => {
-    fetch(`/api/group-components/by-group?group_name=${groupName}`)
-      .then(res => res.json())
-      .then(data => {
-        setAvailableComponents(data)
-        if (data.length > 0) setSelectedComponentId(data[0].component_id)
-        setLoading(false)
-      })
-      .catch(err => { console.error(err); setLoading(false) })
-  }, [groupName])
-
-  const handleSelect = () => {
-    const selected = availableComponents.find(c => c.component_id === selectedComponentId)
-    onSelect(selected || null)
-  }
-
+    if (components.length > 0) setSelectedComponentId(components[0].component_id)
+  }, [components])
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h3>Выберите активный компонент для "{baseName}"</h3>
-        {loading ? <div>Загрузка...</div> : (
-          <>
-            <select value={selectedComponentId} onChange={e => setSelectedComponentId(e.target.value)}>
-              <option value="">Без компонента</option>
-              {availableComponents.map(comp => (
-                <option key={comp.component_id} value={comp.component_id}>
-                  {componentNameRu[comp.component_name] || comp.component_name}
-                </option>
-              ))}
-            </select>
-            <div className="modal-actions">
-              <button onClick={onClose}>Отмена</button>
-              <button onClick={handleSelect}>Выбрать</button>
-            </div>
-          </>
-        )}
+        <select value={selectedComponentId} onChange={e => setSelectedComponentId(e.target.value)}>
+          <option value="">Без компонента</option>
+          {components.map(comp => (
+            <option key={comp.component_id} value={comp.component_id}>
+              {componentNameRu[comp.component_name] || comp.component_name}
+            </option>
+          ))}
+        </select>
+        <div className="modal-actions">
+          <button onClick={onClose}>Отмена</button>
+          <button onClick={() => onSelect(selectedComponentId === '' ? null : selectedComponentId)}>Выбрать</button>
+        </div>
       </div>
     </div>
   )
 }
 
-// ========== ОСНОВНОЙ КОМПОНЕНТ СТРАНИЦЫ ==========
+// ========== ОСНОВНОЙ КОМПОНЕНТ ==========
 export default function ConstructorEditPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
@@ -235,12 +223,23 @@ export default function ConstructorEditPage() {
   const [routineType, setRoutineType] = useState(initialType)
   const [groups, setGroups] = useState([])
   const [selectedGroupId, setSelectedGroupId] = useState(null)
-  const [allProducts, setAllProducts] = useState([])
+  const [allProductsGroup, setAllProductsGroup] = useState([]) // продукты выбранной группы
+  const [allProductsGlobal, setAllProductsGlobal] = useState([]) // все продукты для поиска
   const [uniqueProducts, setUniqueProducts] = useState([])
   const [steps, setSteps] = useState([])
   const [loading, setLoading] = useState(true)
-  const [modalProduct, setModalProduct] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [pendingProduct, setPendingProduct] = useState(null)
+  const [availableComponents, setAvailableComponents] = useState({}) // groupName -> comps[]
+  const [fetchingComponents, setFetchingComponents] = useState({})
+
+  // Загрузка всех продуктов (глобально)
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => setAllProductsGlobal(data))
+      .catch(console.error)
+  }, [])
 
   useEffect(() => {
     getProductGroups().then(setGroups).catch(console.error)
@@ -249,7 +248,7 @@ export default function ConstructorEditPage() {
   useEffect(() => {
     if (selectedGroupId) {
       getProductsByGroup(selectedGroupId).then(products => {
-        setAllProducts(products)
+        setAllProductsGroup(products)
         const map = new Map()
         for (const p of products) {
           let baseName = p.product_name
@@ -267,24 +266,52 @@ export default function ConstructorEditPage() {
         setUniqueProducts(Array.from(map.values()))
       }).catch(console.error)
     } else {
-      setAllProducts([])
+      setAllProductsGroup([])
       setUniqueProducts([])
     }
   }, [selectedGroupId])
 
+  // Загрузка компонентов для группы
+  const fetchComponentsForGroup = async (groupName) => {
+    if (availableComponents[groupName] || fetchingComponents[groupName]) return
+    setFetchingComponents(prev => ({ ...prev, [groupName]: true }))
+    try {
+      const res = await fetch(`/api/group-components/by-group?group_name=${groupName}`)
+      const data = await res.json()
+      setAvailableComponents(prev => ({ ...prev, [groupName]: data }))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setFetchingComponents(prev => ({ ...prev, [groupName]: false }))
+    }
+  }
+
+  // Подгрузка компонентов для всех групп, встречающихся в шагах
+  useEffect(() => {
+    steps.forEach(step => {
+      if (step.product_group) fetchComponentsForGroup(step.product_group)
+    })
+  }, [steps])
+
   const loadRoutine = async () => {
     if (existingRoutine) {
-      const loadedSteps = existingRoutine.steps.map((step, idx) => ({
-        id: step.routine_step_id,
-        product_id: step.product.product_id,
-        product_name: step.product.product_name,
-        product_group: step.product.group_name,
-        step_order: idx + 1,
-        frequency_type: step.frequency_type,
-        frequency_value: step.frequency_value,
-        component_id: step.product.component_id || null,
-        component_name: step.product.component_name || null
-      }))
+      const loadedSteps = existingRoutine.steps.map((step, idx) => {
+        let baseName = step.product.product_name
+        const parenIndex = baseName.indexOf(' (')
+        if (parenIndex !== -1) baseName = baseName.substring(0, parenIndex)
+        return {
+          id: step.routine_step_id,
+          product_id: step.product.product_id,
+          product_name: step.product.product_name,
+          product_group: step.product.group_name,
+          baseProductName: baseName,
+          step_order: idx + 1,
+          frequency_type: step.frequency_type,
+          frequency_value: step.frequency_value,
+          component_id: step.product.component_id || null,
+          component_name: step.product.component_name || null
+        }
+      })
       setSteps(loadedSteps)
       setLoading(false)
     } else if (id && !existingRoutine) {
@@ -293,17 +320,23 @@ export default function ConstructorEditPage() {
         const found = routines.find(r => r.routine_id === id)
         if (found) {
           setRoutineType(found.routine_type)
-          const loadedSteps = found.steps.map((step, idx) => ({
-            id: step.routine_step_id,
-            product_id: step.product.product_id,
-            product_name: step.product.product_name,
-            product_group: step.product.group_name,
-            step_order: idx + 1,
-            frequency_type: step.frequency_type,
-            frequency_value: step.frequency_value,
-            component_id: step.product.component_id || null,
-            component_name: step.product.component_name || null
-          }))
+          const loadedSteps = found.steps.map((step, idx) => {
+            let baseName = step.product.product_name
+            const parenIndex = baseName.indexOf(' (')
+            if (parenIndex !== -1) baseName = baseName.substring(0, parenIndex)
+            return {
+              id: step.routine_step_id,
+              product_id: step.product.product_id,
+              product_name: step.product.product_name,
+              product_group: step.product.group_name,
+              baseProductName: baseName,
+              step_order: idx + 1,
+              frequency_type: step.frequency_type,
+              frequency_value: step.frequency_value,
+              component_id: step.product.component_id || null,
+              component_name: step.product.component_name || null
+            }
+          })
           setSteps(loadedSteps)
         } else navigate('/constructor')
       } catch (err) { console.error(err) } finally { setLoading(false) }
@@ -312,48 +345,52 @@ export default function ConstructorEditPage() {
 
   useEffect(() => { loadRoutine() }, [id, existingRoutine])
 
-  const handleProductDrop = (dragItem, targetIndex) => {
-    if (!dragItem) return
-    setModalProduct({
-      baseName: dragItem.baseName,
-      groupName: dragItem.groupName,
-      targetIndex: targetIndex
+  // Поиск продукта по базовому имени, группе и component_id
+  const findProduct = (baseName, groupName, componentId) => {
+    return allProductsGlobal.find(p => {
+      const pBase = p.product_name.split(' (')[0]
+      return pBase === baseName && p.group_name === groupName && (p.component_id === componentId || (componentId === null && p.component_id === null))
     })
-    setModalOpen(true)
   }
 
-  const handleComponentSelect = (selectedComponent) => {
-    if (!modalProduct) return
-    const { baseName, groupName, targetIndex } = modalProduct
-    let targetProduct = null
-    if (selectedComponent) {
-      targetProduct = allProducts.find(p => {
-        const pBase = p.product_name.split(' (')[0]
-        return pBase === baseName && p.component_id === selectedComponent.component_id
+  // Обработка перетаскивания продукта
+  const handleProductDrop = (dragItem, targetIndex) => {
+    if (!dragItem) return
+    const { baseName, groupName } = dragItem
+    if (!availableComponents[groupName]) {
+      fetchComponentsForGroup(groupName).then(() => {
+        setPendingProduct({ baseName, groupName, targetIndex })
+        setModalOpen(true)
       })
     } else {
-      targetProduct = allProducts.find(p => {
-        const pBase = p.product_name.split(' (')[0]
-        return pBase === baseName && p.component_id === null
-      })
+      setPendingProduct({ baseName, groupName, targetIndex })
+      setModalOpen(true)
     }
-    if (!targetProduct) {
-      alert('Продукт с таким компонентом не найден. Возможно, нужно запустить seed.')
+  }
+
+  const handleComponentSelectModal = (componentId) => {
+    if (!pendingProduct) return
+    const { baseName, groupName, targetIndex } = pendingProduct
+    const product = findProduct(baseName, groupName, componentId)
+    if (!product) {
+      alert('Продукт с таким компонентом не найден. Проверьте данные в БД.')
       setModalOpen(false)
+      setPendingProduct(null)
       return
     }
     setSteps(prev => {
       const newSteps = [...prev]
       const newStep = {
         id: Date.now(),
-        product_id: targetProduct.product_id,
-        product_name: targetProduct.product_name,
-        product_group: targetProduct.group_name,
+        product_id: product.product_id,
+        product_name: product.product_name,
+        product_group: product.group_name,
+        baseProductName: baseName,
         step_order: (targetIndex === null || targetIndex >= newSteps.length) ? newSteps.length + 1 : targetIndex + 1,
         frequency_type: 'daily',
         frequency_value: 0,
-        component_id: targetProduct.component_id,
-        component_name: targetProduct.component_name
+        component_id: product.component_id,
+        component_name: product.component_name
       }
       if (targetIndex !== null && targetIndex < newSteps.length) {
         newSteps[targetIndex] = newStep
@@ -364,6 +401,29 @@ export default function ConstructorEditPage() {
       return newSteps
     })
     setModalOpen(false)
+    setPendingProduct(null)
+  }
+
+  // Смена компонента у существующего шага
+  const handleComponentChange = (stepIndex, componentId) => {
+    const step = steps[stepIndex]
+    const { baseProductName, product_group } = step
+    const newProduct = findProduct(baseProductName, product_group, componentId)
+    if (!newProduct) {
+      alert(`Не удалось найти продукт "${baseProductName}" с компонентом ${componentId} в группе ${product_group}`)
+      return
+    }
+    setSteps(prev => {
+      const newSteps = [...prev]
+      newSteps[stepIndex] = {
+        ...newSteps[stepIndex],
+        product_id: newProduct.product_id,
+        product_name: newProduct.product_name,
+        component_id: newProduct.component_id,
+        component_name: newProduct.component_name
+      }
+      return newSteps
+    })
   }
 
   const removeStep = (index) => {
@@ -491,7 +551,9 @@ export default function ConstructorEditPage() {
                 onMoveUp={moveStep}
                 onMoveDown={moveStep}
                 onUpdateFrequency={updateFrequency}
+                onComponentChange={handleComponentChange}
                 bgColor={productColors[idx % productColors.length]}
+                availableComponents={availableComponents}
               />
             ))}
           </div>
@@ -505,12 +567,13 @@ export default function ConstructorEditPage() {
           </div>
         </div>
       </div>
-      {modalOpen && (
+      {modalOpen && pendingProduct && availableComponents[pendingProduct.groupName] && (
         <ComponentModal
-          baseName={modalProduct.baseName}
-          groupName={modalProduct.groupName}
-          onClose={() => setModalOpen(false)}
-          onSelect={handleComponentSelect}
+          baseName={pendingProduct.baseName}
+          groupName={pendingProduct.groupName}
+          components={availableComponents[pendingProduct.groupName]}
+          onClose={() => { setModalOpen(false); setPendingProduct(null) }}
+          onSelect={handleComponentSelectModal}
         />
       )}
     </DndProvider>
